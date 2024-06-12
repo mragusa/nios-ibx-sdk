@@ -24,7 +24,15 @@ log = init_logger(
 wapi = Gift()
 
 help_text = """
-Edit as Needed
+Script to interface with A records inside of an Infoblox grid.
+Operations:
+    Add
+    Delete
+    Update
+
+Script operations are logged to wapi.log inside of present working directory. 
+Update operations support modifying TTL, FQDN, and IP address.
+TTL defaults to 600 seconds for new records and 5 seconds for IP address updates.
 """
 current_time = date.today()
 
