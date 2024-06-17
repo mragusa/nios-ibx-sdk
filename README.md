@@ -2,6 +2,7 @@
 A collection of Infoblox scripts using the ibx-sdk library developed by Infoblox Professional Services
 ## Operational
 | Script File | Description |
+| :---: | :---: |
 | `nios_a.py` | script to interact with A records |
 | `nios_cname.py` | script to interact with CNAME records | 
 | `nios_mx.py` | script to interact with MX records |
