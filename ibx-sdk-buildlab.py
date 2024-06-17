@@ -23,7 +23,7 @@ log = init_logger(
 wapi = Gift()
 
 help_text = """
-Edit as Needed
+Build basic record types inside of a lab for testing Grid/API functionality.
 """
 
 
