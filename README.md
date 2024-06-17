@@ -9,6 +9,7 @@ A collection of Infoblox scripts using the ibx-sdk library developed by Infoblox
 
 ## Advanced DNS Protection
 | Script Name | Description | 
+| :---: | :---: |
 | `nios_adp_profiles.py` | Interact with ADP Profiles |
 
 
