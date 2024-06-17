@@ -128,7 +128,7 @@ def main(
             cname_record_ref = wapi.getone(
                 "record:cname", json={"canonical": canonical, "name": name, "view": view}
             )
-            cname_record_delete = wapi.delete(a_record_ref)
+            cname_record_delete = wapi.delete(cname_record_ref)
             if cname_record_delete.status_code != 200:
                 print(f"Record deletion failed {cname_record_delete.text}")
             else:
