@@ -43,7 +43,9 @@ current_time = date.today()
 )
 @optgroup.group("Required Parameters")
 @optgroup.option("-g", "--grid-mgr", required=True, help="Infoblox Grid Manager")
-@optgroup.option("-e", "--exchanger", required=True, show_default=True, help="Mail Exchanger name")
+@optgroup.option(
+    "-e", "--exchanger", required=True, show_default=True, help="Mail Exchanger name"
+)
 @optgroup.option("-n", "--name", required=True, show_default=True, help="DNS name")
 @optgroup.group("Operationational Parameters")
 @optgroup.option("--add", is_flag=True, help="Add record")
@@ -126,7 +128,8 @@ def main(
         try:
             # Delete MX record from infoblox zone
             mx_record_ref = wapi.getone(
-                "record:mx", json={"mail_exchanger": exchanger, "name": name, "view": view}
+                "record:mx",
+                json={"mail_exchanger": exchanger, "name": name, "view": view},
             )
             mx_record_delete = wapi.delete(mx_record_ref)
             if mx_record_delete.status_code != 200:
@@ -140,7 +143,8 @@ def main(
         try:
             # Update existing MX record
             mx_record_ref = wapi.getone(
-                "record:mx", json={"name": name, "mail_exchanger": exchanger, "view": view}
+                "record:mx",
+                json={"name": name, "mail_exchanger": exchanger, "view": view},
             )
             if newname:
                 updated_rdata = {"ttl": newttl, "name": newname}

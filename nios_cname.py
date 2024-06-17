@@ -43,7 +43,9 @@ current_time = date.today()
 )
 @optgroup.group("Required Parameters")
 @optgroup.option("-g", "--grid-mgr", required=True, help="Infoblox Grid Manager")
-@optgroup.option("-c", "--canonical", required=True, show_default=True, help="Canonical name")
+@optgroup.option(
+    "-c", "--canonical", required=True, show_default=True, help="Canonical name"
+)
 @optgroup.option("-n", "--name", required=True, show_default=True, help="DNS name")
 @optgroup.group("Operationational Parameters")
 @optgroup.option("--add", is_flag=True, help="Add record")
@@ -126,7 +128,8 @@ def main(
         try:
             # Delete CNAME record from infoblox zone
             cname_record_ref = wapi.getone(
-                "record:cname", json={"canonical": canonical, "name": name, "view": view}
+                "record:cname",
+                json={"canonical": canonical, "name": name, "view": view},
             )
             cname_record_delete = wapi.delete(cname_record_ref)
             if cname_record_delete.status_code != 200:
@@ -140,7 +143,8 @@ def main(
         try:
             # Update existing CNAME record
             cname_record_ref = wapi.getone(
-                "record:cname", json={"name": name, "canonical": canonical, "view": view}
+                "record:cname",
+                json={"name": name, "canonical": canonical, "view": view},
             )
             if newname:
                 updated_rdata = {"ttl": newttl, "name": newname}
