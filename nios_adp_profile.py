@@ -23,7 +23,14 @@ log = init_logger(
 wapi = Gift()
 
 help_text = """
-Edit as Needed
+Interface with Infoblox ADP profiles
+
+Possible actions:
+    Retrieve: Get existing profiles
+    Create: Create a new ADP profile with the current ruleset
+    Delete: Delete existing ADP profile
+
+    Detailed Information on Infoblox ADP profiles: https://docs.infoblox.com/space/nios90/280760256/Configuring+Threat+Protection+Profiles
 """
 
 
@@ -34,10 +41,19 @@ Edit as Needed
 @optgroup.group("Required Parameters")
 @optgroup.option("-g", "--grid-mgr", required=True, help="Infoblox Grid Manager")
 @optgroup.option("-r", "--retrieve", is_flag=True, help="Display existing ADP profile")
-@optgroup.option("-c", "--create", default="Internal", help="Create ADP profile: default name is Internal")
+@optgroup.option(
+    "-c",
+    "--create",
+    default="Internal",
+    help="Create ADP profile: default name is Internal",
+)
 @optgroup.option("-d", "--delete", help="Delete ADP profile")
 @optgroup.group("Optional Parameters")
-@optgroup.option("-m", "--members", help="Members to assign to ADP profile")
+@optgroup.option(
+    "-m",
+    "--members",
+    help="Members to assign to ADP profile: multiple members should be comma seperated enclosed in double quotes",
+)
 @optgroup.option(
     "-u",
     "--username",
@@ -50,7 +66,16 @@ Edit as Needed
 )
 @optgroup.group("Logging Parameters")
 @optgroup.option("--debug", is_flag=True, help="enable verbose debug output")
-def main(grid_mgr: str, username: str, wapi_ver: str, retrieve: bool, create: str, delete: str, members: str, debug: bool) -> None:
+def main(
+    grid_mgr: str,
+    username: str,
+    wapi_ver: str,
+    retrieve: bool,
+    create: str,
+    delete: str,
+    members: str,
+    debug: bool,
+) -> None:
     if debug:
         increase_log_level()
     wapi.grid_mgr = grid_mgr
@@ -67,45 +92,73 @@ def main(grid_mgr: str, username: str, wapi_ver: str, retrieve: bool, create: st
         try:
             # Retrieve ADP profile from Infoblox appliance
             existing_adp_profiles = wapi.get("threatprotection:profile")
-            ruleset = wapi.get("grid:threatprotection", params={"_return_fields":["current_ruleset", "grid_name", "last_rule_update_version"]})
+            ruleset = wapi.get(
+                "grid:threatprotection",
+                params={
+                    "_return_fields": [
+                        "current_ruleset",
+                        "grid_name",
+                        "last_rule_update_version",
+                    ]
+                },
+            )
             if existing_adp_profiles.status_code != 200:
-                print(f"No existing ADP profiles found: {existing_adp_profiles.status_code}")
+                print(
+                    f"No existing ADP profiles found: {existing_adp_profiles.status_code}"
+                )
             else:
                 print(existing_adp_profiles.json())
             if ruleset.status_code != 200:
                 print(f"ADP ruleset not found: {ruleset.status_code}")
             else:
                 print(ruleset.json())
-	    except WapiRequestException as err:
-	        log.error(err)
-	        sys.exit(1)
-    if create: 
+        except WapiRequestException as err:
+            log.error(err)
+            sys.exit(1)
+    if create:
         try:
-            current_ruleset = wapi.get("grid:threatprotection", params={"_return_fields":["current_ruleset"]})
+            current_ruleset = wapi.get(
+                "grid:threatprotection", params={"_return_fields": ["current_ruleset"]}
+            )
             if members:
-                new_adp_profile = wapi.post("threatprotection:profile", json={"name": create, "members": members," use_current_ruleset":True, "current_ruleset": current_ruleset.json()})
+                new_adp_profile = wapi.post(
+                    "threatprotection:profile",
+                    json={
+                        "name": create,
+                        "members": members,
+                        " use_current_ruleset": True,
+                        "current_ruleset": current_ruleset.json(),
+                    },
+                )
             else:
-                new_adp_profile = wapi.post("threatprotection:profile", json={"name": create, "use_current_ruleset": True, "current_ruleset": current_ruleset.json()})
+                new_adp_profile = wapi.post(
+                    "threatprotection:profile",
+                    json={
+                        "name": create,
+                        "use_current_ruleset": True,
+                        "current_ruleset": current_ruleset.json(),
+                    },
+                )
             if new_adp_profile.status_code != 201:
                 print(f"ADP profile creation failed: {new_adp_profile.text}")
             else:
                 print(f"ADP profile {create} created: {new_adp_profile.json()}")
-	    except WapiRequestException as err:
-	        log.error(err)
-	        sys.exit(1)
+        except WapiRequestException as err:
+            log.error(err)
+            sys.exit(1)
     if delete:
         try:
             # Delete ADP profile
-            adp_profile = wapi.get("threatprotection:profile",json{"name": delete})
-            if adp_profile.status = 200:
+            adp_profile = wapi.get("threatprotection:profile", json={"name": delete})
+            if adp_profile.status == 200:
                 del_adp_profile = wapi.delete(adp_profile.text)
-                if del_adp_profile.status !=200:
+                if del_adp_profile.status != 200:
                     print(f"ADP profile removal failed: {del_adp_profile.text}")
                 else:
                     print(f"ADP profile removed: {del_adp_profile.json()}")
-	    except WapiRequestException as err:
-	        log.error(err)
-	        sys.exit(1)
+        except WapiRequestException as err:
+            log.error(err)
+            sys.exit(1)
 
     sys.exit()
 
