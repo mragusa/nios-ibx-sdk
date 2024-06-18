@@ -25,12 +25,7 @@ wapi = Gift()
 help_text = """
 Interface with Infoblox ADP profiles
 
-Possible actions:
-    Retrieve: Get existing profiles
-    Create: Create a new ADP profile with the current ruleset
-    Delete: Delete existing ADP profile
-
-    Detailed Information on Infoblox ADP profiles: https://docs.infoblox.com/space/nios90/280760256/Configuring+Threat+Protection+Profiles
+Detailed Information on Infoblox ADP profiles: https://docs.infoblox.com/space/nios90/280760256/Configuring+Threat+Protection+Profiles
 """
 
 
@@ -106,12 +101,18 @@ def main(
                 print(
                     f"No existing ADP profiles found: {existing_adp_profiles.status_code}"
                 )
+                log.error("adp profiles not found")
             else:
-                print(existing_adp_profiles.json())
+                print(f"existing adp profile: {existing_adp_profiles.json()}")
+                log.info("existing adp profile found: %s", existing_adp_profiles.text)
+
             if ruleset.status_code != 200:
                 print(f"ADP ruleset not found: {ruleset.status_code}")
+                log.error("adp ruleset not found")
             else:
-                print(ruleset.json())
+                print(f"ruleset found: {ruleset.json()}") 
+                log.info("ruleset found: %s", ruleset.json())
+
         except WapiRequestException as err:
             log.error(err)
             sys.exit(1)
@@ -141,8 +142,10 @@ def main(
                 )
             if new_adp_profile.status_code != 201:
                 print(f"ADP profile creation failed: {new_adp_profile.text}")
+                log.error("adp profile creation failed: %s", new_adp_profile.text)
             else:
                 print(f"ADP profile {create} created: {new_adp_profile.json()}")
+                log.info("adp profile created: %s", new_adp_profile.json())
         except WapiRequestException as err:
             log.error(err)
             sys.exit(1)
@@ -154,8 +157,10 @@ def main(
                 del_adp_profile = wapi.delete(adp_profile.text)
                 if del_adp_profile.status != 200:
                     print(f"ADP profile removal failed: {del_adp_profile.text}")
+                    log.error("adp profile removal failed: %s", del_adp_profile.text)
                 else:
                     print(f"ADP profile removed: {del_adp_profile.json()}")
+                    log.info("adp profile removed: %s", del_adp_profile.json())
         except WapiRequestException as err:
             log.error(err)
             sys.exit(1)
