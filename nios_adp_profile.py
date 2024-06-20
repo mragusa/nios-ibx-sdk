@@ -5,6 +5,7 @@ import getpass
 import sys
 import click
 from click_option_group import optgroup
+from datetime import date
 
 from ibx_sdk.logger.ibx_logger import init_logger, increase_log_level
 
@@ -19,7 +20,7 @@ log = init_logger(
     max_size=100000,
     num_logs=1,
 )
-
+current_time = date.today()
 wapi = Gift()
 
 help_text = """
@@ -45,6 +46,7 @@ Detailed Information on Infoblox ADP profiles: https://docs.infoblox.com/space/n
 @optgroup.option("-d", "--delete", is_flag=True, help="Delete ADP profile")
 @optgroup.group("Optional Parameters")
 @optgroup.option("-n", "--profilename", default="Internal", help="ADP profile name for creation or deletion")
+@optgroup.option("--comment", default="created on {current_time}", help="comment for adp profile")
 @optgroup.option(
     "-m",
     "--members",
@@ -71,6 +73,7 @@ def main(
     delete: bool,
     profilename: str,
     members: str,
+    comment: str,
     debug: bool,
 ) -> None:
     if debug:
@@ -148,6 +151,7 @@ def main(
                                     "members": [members],
                                     "use_current_ruleset": True,
                                     "current_ruleset": active_ruleset[0]["current_ruleset"],
+                                    "comment": comment,
                                 },
                             )
                         except WapiRequestException as err:
@@ -161,6 +165,7 @@ def main(
                                     "name": profilename,
                                     "use_current_ruleset": True,
                                     "current_ruleset": active_ruleset[0]["current_ruleset"],
+                                    "comment": comment,
                                 },
                             )
                         except WapiRequestException as err:
