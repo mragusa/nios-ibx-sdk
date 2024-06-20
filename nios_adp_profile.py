@@ -45,8 +45,15 @@ Detailed Information on Infoblox ADP profiles: https://docs.infoblox.com/space/n
 )
 @optgroup.option("-d", "--delete", is_flag=True, help="Delete ADP profile")
 @optgroup.group("Optional Parameters")
-@optgroup.option("-n", "--profilename", default="Internal", help="ADP profile name for creation or deletion")
-@optgroup.option("--comment", default="created on {current_time}", help="comment for adp profile")
+@optgroup.option(
+    "-n",
+    "--profilename",
+    default="Internal",
+    help="ADP profile name for creation or deletion",
+)
+@optgroup.option(
+    "--comment", default="created on {current_time}", help="comment for adp profile"
+)
 @optgroup.option(
     "-m",
     "--members",
@@ -120,7 +127,7 @@ def main(
                 log.error("adp ruleset not found: %s", ruleset.text)
             else:
                 if debug:
-                    print(f"current ruleset: {ruleset.json()}") 
+                    print(f"current ruleset: {ruleset.json()}")
                 adp_profile_ruleset = ruleset.json()
                 for x in adp_profile_ruleset:
                     log.info("current ruleset: %s", x["current_ruleset"])
@@ -135,7 +142,7 @@ def main(
             if current_ruleset.status_code != 200:
                 if debug:
                     print(f"ADP ruleset not found: {current_ruleset.json()}")
-                log.error("no adp ruleset found: %s". current_ruleset.text)
+                log.error("no adp ruleset found: %s".current_ruleset.text)
             else:
                 active_ruleset = current_ruleset.json()
                 if debug:
@@ -150,7 +157,9 @@ def main(
                                     "name": profilename,
                                     "members": [members],
                                     "use_current_ruleset": True,
-                                    "current_ruleset": active_ruleset[0]["current_ruleset"],
+                                    "current_ruleset": active_ruleset[0][
+                                        "current_ruleset"
+                                    ],
                                     "comment": comment,
                                 },
                             )
@@ -164,7 +173,9 @@ def main(
                                 json={
                                     "name": profilename,
                                     "use_current_ruleset": True,
-                                    "current_ruleset": active_ruleset[0]["current_ruleset"],
+                                    "current_ruleset": active_ruleset[0][
+                                        "current_ruleset"
+                                    ],
                                     "comment": comment,
                                 },
                             )
@@ -173,11 +184,17 @@ def main(
                             sys.exit(1)
                     if new_adp_profile.status_code != 201:
                         if debug:
-                            print(f"adp profile creation failed: {new_adp_profile.text}")
-                        log.error("adp profile creation failed: %s", new_adp_profile.text)
+                            print(
+                                f"adp profile creation failed: {new_adp_profile.text}"
+                            )
+                        log.error(
+                            "adp profile creation failed: %s", new_adp_profile.text
+                        )
                     else:
                         if debug:
-                            print(f"adp profile {profilename} created: {new_adp_profile.json()}")
+                            print(
+                                f"adp profile {profilename} created: {new_adp_profile.json()}"
+                            )
                         adp_profile = new_adp_profile.json()
                         log.info("adp profile created: %s %s", profilename, adp_profile)
                 else:
@@ -195,7 +212,9 @@ def main(
                 if debug:
                     print(f"Searching for ADP profile: {profilename}")
                 log.info("searching for adp profile: %s", profilename)
-                adp_profile = wapi.get("threatprotection:profile", params={"name": profilename})
+                adp_profile = wapi.get(
+                    "threatprotection:profile", params={"name": profilename}
+                )
                 if debug:
                     print(adp_profile.json())
                 if adp_profile.status_code != 200:
@@ -208,7 +227,9 @@ def main(
                     if del_adp_profile.status_code != 200:
                         if debug:
                             print(f"ADP profile removal failed: {del_adp_profile.text}")
-                        log.error("adp profile removal failed: %s", del_adp_profile.text)
+                        log.error(
+                            "adp profile removal failed: %s", del_adp_profile.text
+                        )
                     else:
                         if debug:
                             print(f"ADP profile removed: {del_adp_profile.json()}")
