@@ -65,7 +65,7 @@ current_time = date.today()
 @optgroup.option("-t", "--ttl", default=600, help="TTL in seconds")
 @optgroup.option("-d", "--disable", is_flag=True, help="Disable record")
 @optgroup.option(
-    "-c", "--comment", default="created on {current_time}", help="Comment for record"
+        "-c", "--comment", default=current_time, help="Comment for record: defaults to creation date"
 )
 @optgroup.option("-v", "--view", default="default", help="DNS view")
 @optgroup.group("Update Parameters")
