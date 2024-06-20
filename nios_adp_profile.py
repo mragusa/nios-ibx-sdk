@@ -52,7 +52,9 @@ Detailed Information on Infoblox ADP profiles: https://docs.infoblox.com/space/n
     help="ADP profile name for creation or deletion",
 )
 @optgroup.option(
-        "--comment", default=current_time, help="comment for adp profile: default is date of creation"
+    "--comment",
+    default=current_time,
+    help="comment for adp profile: default is date of creation",
 )
 @optgroup.option(
     "-m",
@@ -152,7 +154,7 @@ def main(
                     if members:
                         if debug:
                             print(f"applying {members} to adp profile {profilename}")
-                        log.info("applying %s to adp profile %s",members, profilename)
+                        log.info("applying %s to adp profile %s", members, profilename)
                         try:
                             new_adp_profile = wapi.post(
                                 "threatprotection:profile",
