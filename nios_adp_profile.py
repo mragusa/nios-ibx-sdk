@@ -150,6 +150,9 @@ def main(
                 log.info("adp ruleset found: %s", active_ruleset[0]["current_ruleset"])
                 if profilename:
                     if members:
+                        if debug:
+                            print(f"applying {members} to adp profile {profilename}")
+                        log.info("applying %s to adp profile %s",members, profilename)
                         try:
                             new_adp_profile = wapi.post(
                                 "threatprotection:profile",
