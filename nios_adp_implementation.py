@@ -38,8 +38,14 @@ For more information, please engage your Infoblox Professional Services Engineer
 @optgroup.option("-g", "--grid-mgr", required=True, help="Infoblox Grid Manager")
 @optgroup.group("Optional Parameters")
 @optgroup.option("-n", "--name", default="Internal-Test", help="ADP Profile Name")
-@optgroup.option("-m", "--members", help="Infoblox Grid Members to ADP profile (multiple members should be added in a quoted comma seperated list")
-@optgroup.option("-r", "--recursive", is_flag=True, help="Infoblox members are recursive")
+@optgroup.option(
+    "-m",
+    "--members",
+    help="Infoblox Grid Members to ADP profile (multiple members should be added in a quoted comma seperated list",
+)
+@optgroup.option(
+    "-r", "--recursive", is_flag=True, help="Infoblox members are recursive"
+)
 @optgroup.option(
     "-u",
     "--username",
@@ -62,7 +68,16 @@ def enable_rule(rule, ref):
     else:
         log.info("%s rule enabled", rule)
 
-def main(grid_mgr: str, username: str, wapi_ver: str, name: str, members: str, recursive: bool, debug: bool) -> None:
+
+def main(
+    grid_mgr: str,
+    username: str,
+    wapi_ver: str,
+    name: str,
+    members: str,
+    recursive: bool,
+    debug: bool,
+) -> None:
     grid_members_dns = []
     recursive_sids = []
     authoritative_sids = []
@@ -84,7 +99,17 @@ def main(grid_mgr: str, username: str, wapi_ver: str, name: str, members: str, r
     else:
         log.info("Searching for members with the DNS service")
         try:
-            grid_members = wapi.get("member", params={"_return_fields": "host_name", "active_position", "master_candidate", "service_status"})
+            grid_members = wapi.get(
+                "member",
+                params={
+                    "_return_fields": [
+                        "host_name",
+                        "active_position",
+                        "master_candidate",
+                        "service_status",
+                    ]
+                },
+            )
             if grid_members.status_code != 200:
                 log.error("no members found: %s", grid_members.text)
             else:
@@ -92,23 +117,41 @@ def main(grid_mgr: str, username: str, wapi_ver: str, name: str, members: str, r
                 found_members = grid_members.json()
                 for gm in found_members:
                     for service in gm["service_status"]:
-                        if service["service"] == "DNS" and service["status"] == "WORKING":
-                            log.info("Host: %s DNS Service: %s", gm["host_name"], service)
+                        if (
+                            service["service"] == "DNS"
+                            and service["status"] == "WORKING"
+                        ):
+                            log.info(
+                                "Host: %s DNS Service: %s", gm["host_name"], service
+                            )
                             grid_members_dns.apped(gm["host_name"])
                         else:
-                            log.error("Host: %s DNS Service: %s", gm["host_name"], service)
+                            log.error(
+                                "Host: %s DNS Service: %s", gm["host_name"], service
+                            )
         except WapiRequest as err:
             log.error(err)
             sys.exit(1)
     # Determine existing ruleset
     try:
-        ruleset = wapi.get("grid:threatprotection", params={"_return_fields":"current_ruleset"})
+        ruleset = wapi.get(
+            "grid:threatprotection", params={"_return_fields": "current_ruleset"}
+        )
         if ruleset.status_code != 200:
             log.error("no adp rules found: %s", ruleset.text)
         else:
             # Create ADP profile
+            rs = ruleset.json()
             try:
-                new_adp_profile = wapi.post("threatprotection:profile", params={"name": name, "members": grid_members_dns, "use_current_ruleset": True, "current_ruleset": })
+                new_adp_profile = wapi.post(
+                    "threatprotection:profile",
+                    params={
+                        "name": name,
+                        "members": grid_members_dns,
+                        "use_current_ruleset": True,
+                        "current_ruleset": rs[0]["current_ruleset"],
+                    },
+                )
                 if new_adp_profile != 201:
                     log.error("adp profile creation failed: %s", new_adp_profile.text)
                 else:
@@ -124,18 +167,89 @@ def main(grid_mgr: str, username: str, wapi_ver: str, name: str, members: str, r
         # Malware Category (Recursive DNS)
         # Disable RR Types not defined (Authoritative Only DNS)
     try:
-        grid_rules = wapi.get("threatprotection:grid:rule", params={"_return_fields":"name","sid","category"})
+        grid_rules = wapi.get(
+            "threatprotection:grid:rule",
+            params={"_return_fields": ["name", "sid", "category"]},
+        )
         if grid_rules.status_code != 200:
             log.error("grid rules not found: %s", grid_rules.text)
         else:
+            # Retreieve current rules assigned to profile
             grid_rules_default = grid_rules.json()
             for rules in grid_rules_default:
                 category = rules["category"].split("/")
+                cat_name = category[2].replace("%2F", "/")
+                plain_cat_name = cat_name.replace("%2F", "/")
+                if recursive:
+                    recursice_server_search = re.compile(
+                        r"Malware|Tunnel", re.IGNORECASE
+                    )
+                    recursive_server_search = re.compile(
+                        r"Malware|Tunnel", re.IGNORECASE
+                    )
+                    recursive_server_category = recursive_server_search.findall(
+                        plain_cat_name
+                    )
+                    if recursive_server_category:
+                        recursive_sids.append(rules["sid"])
+                #                   # TODO determine how to disable specific record types (maybe from predefined list)
+                #                if authoritative:
+                #                    authoritative_server_search = re.compile(r"DNS Message Types", re.IGNORECASE)
+                #                    authoritative_server_category = authoritative_server_search.findall(
+                #                        plain_cat_name
+                #                    )
+                #                if authoritative_server_category:
+                #                    authoritative_sids.append(rules["sid"])
+                try:
+                    profile_rules = wapi.get(
+                        "threatprotection:profile:rule",
+                        params={
+                            "_return_fields": [
+                                "profile",
+                                "rule",
+                                "disable",
+                                "config",
+                                "sid",
+                                "use_config",
+                                "use_disable",
+                            ]
+                        },
+                    )
+                    # Update profile rules
+                    if profile_rules.status_code != 200:
+                        log.error("no adp rules found: %s", profile_rules.text)
+                    else:
+                        rules = profile_rules.json()
+                        # ADP flood rules (130000200, 130000400)
+                        # Early pass UDP response (100000100)
+                        # DDoS rules (200000001, 200000002, 200000003)
+                        sid_rules = [
+                            "130000200",
+                            "130000400",
+                            "100000100",
+                            "200000001",
+                            "200000002",
+                            "200000003",
+                        ]
+                        for pr in rules:
+                            if pr["sid"] in sid_rules:
+                                log.info("Rules: %s SID: %s", pr["rule"], pr["sid"])
+                                enable_rule(pr["rule"], pr["_ref"])
+                            if recursive:
+                                if pr["sid"] in recursive_sids:
+                                    log.info(
+                                        "Rules: %s, SID: %s", pr["rule"], pr["sid"]
+                                    )
+                                    enable_rule(pr["rule"], pr["_ref"])
+                            if authoratative:
+                                # TODO add logic
+                                log.error("currently under construction")
+                except WapiRequest as err:
+                    log.error(err)
+                    sys.exit(1)
     except WapiRequest as err:
         log.error(err)
         sys.exit(1)
-        # Retreieve current rules assigned to profile
-        # Update profile rules
 
     sys.exit()
 
