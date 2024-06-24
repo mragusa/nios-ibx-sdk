@@ -58,17 +58,6 @@ For more information, please engage your Infoblox Professional Services Engineer
 )
 @optgroup.group("Logging Parameters")
 @optgroup.option("--debug", is_flag=True, help="enable verbose debug output")
-
-# function to enable rules
-# set use_disable True to avoid inheritence
-def enable_rule(rule, ref):
-    enabled_rule = wapi.update(ref, params={"disable": False, "use_disable": True})
-    if enabled_rule.status_code != 200:
-        log.error("%s rule enablement failed: %s", rule, enabled.rule.text)
-    else:
-        log.info("%s rule enabled", rule)
-
-
 def main(
     grid_mgr: str,
     username: str,
@@ -181,7 +170,7 @@ def main(
                 cat_name = category[2].replace("%2F", "/")
                 plain_cat_name = cat_name.replace("%2F", "/")
                 if recursive:
-                    recursice_server_search = re.compile(
+                    recursive_server_search = re.compile(
                         r"Malware|Tunnel", re.IGNORECASE
                     )
                     recursive_server_search = re.compile(
@@ -252,6 +241,20 @@ def main(
         sys.exit(1)
 
     sys.exit()
+
+
+# function to enable rules
+# set use_disable True to avoid inheritence
+def enable_rule(rule, ref):
+    try:
+        enabled_rule = wapi.update(ref, params={"disable": False, "use_disable": True})
+        if enabled_rule.status_code != 200:
+            log.error("%s rule enablement failed: %s", rule, enabled.rule.text)
+        else:
+            log.info("%s rule enabled", rule)
+    except WapiRequest as err:
+        log.error(err)
+        sys.exit(1)
 
 
 if __name__ == "__main__":
