@@ -11,7 +11,7 @@ A collection of Infoblox scripts using the ibx-sdk library developed by Infoblox
 | Script Name | Description | 
 | :---: | :---: |
 | `nios_adp_profile.py` | Interact with ADP Profiles |
-
+| `nios_adp_implementation.py` | Configure inital production values for evaluation prior to production |
 
 
 
