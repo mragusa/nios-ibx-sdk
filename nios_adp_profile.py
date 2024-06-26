@@ -111,140 +111,103 @@ def main(
                     ]
                 },
             )
-            if existing_adp_profiles.status_code != 200:
-                if debug:
-                    print(
-                        f"No existing ADP profiles found: {existing_adp_profiles.status_code}"
-                    )
-                log.error("adp profiles not found: %s", existing_adp_profiles.text)
-            else:
-                if debug:
-                    print(f"existing adp profile: {existing_adp_profiles.json()}")
-                adp_profile = existing_adp_profiles.json()
-                for x in adp_profile:
-                    log.info("existing adp profile found: %s", x["name"])
-
-            if ruleset.status_code != 200:
-                print(f"ADP ruleset not found: {ruleset.status_code}")
-                log.error("adp ruleset not found: %s", ruleset.text)
-            else:
-                if debug:
-                    print(f"current ruleset: {ruleset.json()}")
-                adp_profile_ruleset = ruleset.json()
-                for x in adp_profile_ruleset:
-                    log.info("current ruleset: %s", x["current_ruleset"])
         except WapiRequestException as err:
             log.error(err)
             sys.exit(1)
+        if existing_adp_profiles.status_code != 200:
+            log.error("adp profiles not found: %s", existing_adp_profiles.text)
+        else:
+            adp_profile = existing_adp_profiles.json()
+            for x in adp_profile:
+                log.info("existing adp profile found: %s", x["name"])
+
+        if ruleset.status_code != 200:
+            log.error("adp ruleset not found: %s", ruleset.text)
+        else:
+            adp_profile_ruleset = ruleset.json()
+            for x in adp_profile_ruleset:
+                log.info("current ruleset: %s", x["current_ruleset"])
     if create:
         try:
             current_ruleset = wapi.get(
                 "grid:threatprotection", params={"_return_fields": ["current_ruleset"]}
             )
-            if current_ruleset.status_code != 200:
-                if debug:
-                    print(f"ADP ruleset not found: {current_ruleset.json()}")
-                log.error("no adp ruleset found: %s".current_ruleset.text)
-            else:
-                active_ruleset = current_ruleset.json()
-                if debug:
-                    print(f"ADP ruleset found: {active_ruleset[0]['current_ruleset']}")
-                log.info("adp ruleset found: %s", active_ruleset[0]["current_ruleset"])
-                if profilename:
-                    if members:
-                        if debug:
-                            print(f"applying {members} to adp profile {profilename}")
-                        log.info("applying %s to adp profile %s", members, profilename)
-                        try:
-                            new_adp_profile = wapi.post(
-                                "threatprotection:profile",
-                                json={
-                                    "name": profilename,
-                                    "members": [members],
-                                    "use_current_ruleset": True,
-                                    "current_ruleset": active_ruleset[0][
-                                        "current_ruleset"
-                                    ],
-                                    "comment": comment,
-                                },
-                            )
-                        except WapiRequestException as err:
-                            log.error(err)
-                            sys.exit(1)
-                    else:
-                        try:
-                            new_adp_profile = wapi.post(
-                                "threatprotection:profile",
-                                json={
-                                    "name": profilename,
-                                    "use_current_ruleset": True,
-                                    "current_ruleset": active_ruleset[0][
-                                        "current_ruleset"
-                                    ],
-                                    "comment": comment,
-                                },
-                            )
-                        except WapiRequestException as err:
-                            log.error(err)
-                            sys.exit(1)
-                    if new_adp_profile.status_code != 201:
-                        if debug:
-                            print(
-                                f"adp profile creation failed: {new_adp_profile.text}"
-                            )
-                        log.error(
-                            "adp profile creation failed: %s", new_adp_profile.text
-                        )
-                    else:
-                        if debug:
-                            print(
-                                f"adp profile {profilename} created: {new_adp_profile.json()}"
-                            )
-                        adp_profile = new_adp_profile.json()
-                        log.info("adp profile created: %s %s", profilename, adp_profile)
-                else:
-                    if debug:
-                        print("profilename not defined")
-                        info.error("profilename not defined")
-                        sys.exit(1)
         except WapiRequestException as err:
             log.error(err)
             sys.exit(1)
+        if current_ruleset.status_code != 200:
+            log.error("no adp ruleset found: %s".current_ruleset.text)
+        else:
+            active_ruleset = current_ruleset.json()
+            log.info("adp ruleset found: %s", active_ruleset[0]["current_ruleset"])
+            if profilename:
+                if members:
+                    log.info("applying %s to adp profile %s", members, profilename)
+                    try:
+                        new_adp_profile = wapi.post(
+                            "threatprotection:profile",
+                            json={
+                                "name": profilename,
+                                "members": [members],
+                                "use_current_ruleset": True,
+                                "current_ruleset": active_ruleset[0][
+                                    "current_ruleset"
+                                ],
+                                "comment": comment,
+                            },
+                        )
+                    except WapiRequestException as err:
+                        log.error(err)
+                        sys.exit(1)
+                else:
+                    try:
+                        new_adp_profile = wapi.post(
+                            "threatprotection:profile",
+                            json={
+                                "name": profilename,
+                                "use_current_ruleset": True,
+                                "current_ruleset": active_ruleset[0][
+                                    "current_ruleset"
+                                ],
+                                "comment": comment,
+                            },
+                        )
+                    except WapiRequestException as err:
+                        log.error(err)
+                        sys.exit(1)
+                if new_adp_profile.status_code != 201:
+                    log.error(
+                        "adp profile creation failed: %s", new_adp_profile.text
+                    )
+                else:
+                    adp_profile = new_adp_profile.json()
+                    log.info("adp profile created: %s %s", profilename, adp_profile)
+            else:
+               info.error("profilename not defined")
+               sys.exit(1)
     if delete:
         if profilename:
             try:
                 # Delete ADP profile
-                if debug:
-                    print(f"Searching for ADP profile: {profilename}")
                 log.info("searching for adp profile: %s", profilename)
                 adp_profile = wapi.get(
                     "threatprotection:profile", params={"name": profilename}
                 )
-                if debug:
-                    print(adp_profile.json())
-                if adp_profile.status_code != 200:
-                    if debug:
-                        print(f"ADP profile {profilename} not found")
-                    log.error("adp profile %s not found", profilename)
-                else:
-                    adp_profile_removal = adp_profile.json()
-                    del_adp_profile = wapi.delete(adp_profile_removal[0]["_ref"])
-                    if del_adp_profile.status_code != 200:
-                        if debug:
-                            print(f"ADP profile removal failed: {del_adp_profile.text}")
-                        log.error(
-                            "adp profile removal failed: %s", del_adp_profile.text
-                        )
-                    else:
-                        if debug:
-                            print(f"ADP profile removed: {del_adp_profile.json()}")
-                        log.info("adp profile removed: %s", del_adp_profile.json())
             except WapiRequestException as err:
                 log.error(err)
                 sys.exit(1)
+            if adp_profile.status_code != 200:
+                log.error("adp profile %s not found", profilename)
+            else:
+                adp_profile_removal = adp_profile.json()
+                del_adp_profile = wapi.delete(adp_profile_removal[0]["_ref"])
+                if del_adp_profile.status_code != 200:
+                    log.error(
+                        "adp profile removal failed: %s", del_adp_profile.text
+                    )
+                else:
+                    log.info("adp profile removed: %s", del_adp_profile.json())
         else:
-            if debug:
-                print("adp profile name not defined")
             log.error("adp profile name not defined")
 
     sys.exit()
