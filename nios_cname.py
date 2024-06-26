@@ -120,13 +120,13 @@ def main(
                     "ttl": ttl,
                 },
             )
-            if cname_record.status_code != 201:
-                print(f"Record creation failed {cname_record.text}")
-            else:
-                print(f"Record creation successful {cname_record.json()}")
         except WapiRequestException as err:
             log.error(err)
             sys.exit(1)
+        if cname_record.status_code != 201:
+            print(f"Record creation failed {cname_record.text}")
+        else:
+            print(f"Record creation successful {cname_record.json()}")
     if delete:
         try:
             # Delete CNAME record from infoblox zone
@@ -135,13 +135,13 @@ def main(
                 json={"canonical": canonical, "name": name, "view": view},
             )
             cname_record_delete = wapi.delete(cname_record_ref)
-            if cname_record_delete.status_code != 200:
-                print(f"Record deletion failed {cname_record_delete.text}")
-            else:
-                print(f"Record deletion successful {cname_record_delete.json()}")
         except WapiRequestException as err:
             log.error(err)
             sys.exit(1)
+        if cname_record_delete.status_code != 200:
+            print(f"Record deletion failed {cname_record_delete.text}")
+        else:
+            print(f"Record deletion successful {cname_record_delete.json()}")
     if update:
         try:
             # Update existing CNAME record
@@ -149,18 +149,18 @@ def main(
                 "record:cname",
                 json={"name": name, "canonical": canonical, "view": view},
             )
-            if newname:
-                updated_rdata = {"ttl": newttl, "name": newname}
-            if newcanonical:
-                updated_rdata = {"canonical": newcanonical, "ttl": newttl}
-            cname_record = wapi.put(cname_record_ref, json=updated_rdata)
-            if cname_record.status_code != 200:
-                print(f"Record update failed {cname_record.text}")
-            else:
-                print(f"Record update successful {cname_record.json()}")
         except WapiRequestException as err:
             log.error(err)
             sys.exit(1)
+        if newname:
+            updated_rdata = {"ttl": newttl, "name": newname}
+        if newcanonical:
+            updated_rdata = {"canonical": newcanonical, "ttl": newttl}
+        cname_record = wapi.put(cname_record_ref, json=updated_rdata)
+        if cname_record.status_code != 200:
+            print(f"Record update failed {cname_record.text}")
+        else:
+            print(f"Record update successful {cname_record.json()}")
 
     sys.exit()
 
