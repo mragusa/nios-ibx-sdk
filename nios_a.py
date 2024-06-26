@@ -118,13 +118,13 @@ def main(
                     "ttl": ttl,
                 },
             )
-            if a_record.status_code != 201:
-                print(f"Record creation failed {a_record.text}")
-            else:
-                print(f"Record creation successful {a_record.json()}")
         except WapiRequestException as err:
             log.error(err)
             sys.exit(1)
+        if a_record.status_code != 201:
+            print(f"Record creation failed {a_record.text}")
+        else:
+            print(f"Record creation successful {a_record.json()}")
     if delete:
         try:
             # Delete A record from infoblox zone
@@ -132,31 +132,31 @@ def main(
                 "record:a", json={"name": fqdn, "ipv4addr": ip, "view": view}
             )
             a_record_delete = wapi.delete(a_record_ref)
-            if a_record_delete.status_code != 200:
-                print(f"Record deletion failed {a_record_delete.text}")
-            else:
-                print(f"Record deletion successful {a_record_delete.json()}")
         except WapiRequestException as err:
             log.error(err)
             sys.exit(1)
+        if a_record_delete.status_code != 200:
+            print(f"Record deletion failed {a_record_delete.text}")
+        else:
+            print(f"Record deletion successful {a_record_delete.json()}")
     if update:
         try:
             # Update existing A record
             a_record_ref = wapi.getone(
                 "record:a", json={"name": fqdn, "ipv4addr": ip, "view": view}
             )
-            if newip and newttl:
-                updated_rdata = {"ttl": newttl, "ipv4addr": newip}
-            if newname:
-                updated_rdata = {"name": newname}
-            a_record = wapi.put(a_record_ref, json=updated_rdata)
-            if a_record.status_code != 200:
-                print(f"Record update failed {a_record.text}")
-            else:
-                print(f"Record update successful {a_record.json()}")
         except WapiRequestException as err:
             log.error(err)
             sys.exit(1)
+        if newip and newttl:
+            updated_rdata = {"ttl": newttl, "ipv4addr": newip}
+        if newname:
+            updated_rdata = {"name": newname}
+        a_record = wapi.put(a_record_ref, json=updated_rdata)
+        if a_record.status_code != 200:
+            print(f"Record update failed {a_record.text}")
+        else:
+            print(f"Record update successful {a_record.json()}")
 
     sys.exit()
 
