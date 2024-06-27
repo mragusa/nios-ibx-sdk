@@ -3,9 +3,12 @@ A collection of Infoblox scripts using the ibx-sdk library developed by Infoblox
 ## Operational Directory
 | Script File | Description |
 | :---: | :---: |
+| `nios_buildlab.py` | populate NIOS with various test records |
 | `nios_a.py` | script to interact with A records |
+| `nios_ptr.py` | script to interact with PTR records |
 | `nios_cname.py` | script to interact with CNAME records | 
 | `nios_mx.py` | script to interact with MX records |
+
 
 ## Security Directory
 ### Advanced DNS Protection
