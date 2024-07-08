@@ -2,6 +2,7 @@
 
 
 import getpass
+import random
 import sys
 import click
 from click_option_group import optgroup
@@ -149,8 +150,9 @@ Hardware Type: CP-V1405,CP-V2205,CP-V805,IB-100,IB-1410,IB-1415,IB-1420,IB-1425,
     help="Hardware type",
 )
 @optgroup.option("-n", "--name", help="FQDN of Infoblox member")
-@optgroup.option("-i", "--ip", help="IP address of NIOS member")
-@optgroup.option("-m", "--mask", help="Subnet mask of NIOS member")
+@optgroup.option("--vip", required=True, help="VIP address of NIOS member")
+@optgroup.option("--subnetmask", required=True, help="Subnet mask of NIOS member")
+@optgroup.option("--gateyway", required=True, help="Gateway for VIP")
 @optgroup.option(
     "-u",
     "--username",
@@ -159,7 +161,10 @@ Hardware Type: CP-V1405,CP-V2205,CP-V805,IB-100,IB-1410,IB-1415,IB-1420,IB-1425,
     help="Infoblox admin username",
 )
 @optgroup.group("Optional Parameters")
-@optgroup.option("-ha", "--highavailablity", help="Enable HA ports")
+@optgroup.option("--highavailability", is_flag=True, help="Enable HA ports")
+@optgroup.option("--lanha", help="HA LAN IP address")
+@optgroup.option("--lanhasubnet", help="HA LAN subnet mask")
+@optgroup.option("--lanhagateway", help="HA LAN gateway")
 @optgroup.option(
     "-w", "--wapi-ver", default="2.11", show_default=True, help="Infoblox WAPI version"
 )
@@ -169,12 +174,19 @@ def main(
     grid_mgr: str,
     username: str,
     wapi_ver: str,
-    debug: bool,
     name: str,
+    vip: str,
+    subnetmask: str,
+    gateway: str,
     model: str,
     platform: str,
     hwtype: str,
     licenses: list,
+    highavailability: bool,
+    lanha: str,
+    lanhasubnet: str,
+    lanhagateway: str,
+    debug: bool,
 ) -> None:
     if debug:
         increase_log_level()
@@ -188,17 +200,35 @@ def main(
         sys.exit(1)
     else:
         log.info("connected to Infoblox grid manager %s", wapi.grid_mgr)
+    payload = {
+        "hostname": name,
+        "vip_setting": {"address": vip, "subnet_mask": mask, "gateway": gateway},
+        "pre_provisioning": {
+            "hardware_info": {"hwmodel": model, "hw_type": hwtype},
+            "licenses": licenses,
+        },
+    }
+    if highavailability:
+        router_id = random.randint(1, 255)
+        payload.update(
+            {
+                "router_id": router_id,
+                "enable_ha": True,
+                "additional_ip_list": {
+                    "interface": "LAN_HA",
+                    "ipv4_network_setting": {
+                        "address": lanha,
+                        "subnet_mask": lanhasubnet,
+                        "gateway": lanhagateway,
+                    },
+                },
+            }
+        )
     try:
         # Setup preprovisioning for Infoblox member
         member_preprovision = wapi.post(
             "member",
-            params={
-                "hostname": name,
-                "pre_provisioning": {
-                    "hardware_info": {"hwmodel": model, "hw_type": hwtype},
-                    "licenses": licenses,
-                },
-            },
+            params={payload},
         )
     except WapiRequestException as err:
         log.error(err)
