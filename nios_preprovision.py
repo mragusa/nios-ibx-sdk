@@ -57,6 +57,7 @@ Hardware Type: CP-V1405,CP-V2205,CP-V805,IB-100,IB-1410,IB-1415,IB-1420,IB-1425,
     "-l",
     "--licenses",
     required=True,
+    multiple=True,
     type=click.Choice(
         [
             "cloudapi",
@@ -79,7 +80,6 @@ Hardware Type: CP-V1405,CP-V2205,CP-V805,IB-100,IB-1410,IB-1415,IB-1420,IB-1425,
 @optgroup.option(
     "-m",
     "--model",
-    required=True,
     type=click.Choice(
         [
             "CP-V1400",
@@ -103,7 +103,6 @@ Hardware Type: CP-V1405,CP-V2205,CP-V805,IB-100,IB-1410,IB-1415,IB-1420,IB-1425,
 @optgroup.option(
     "-t",
     "--hwtype",
-    required=True,
     type=click.Choice(
         [
             "CP-V1405",
@@ -152,7 +151,7 @@ Hardware Type: CP-V1405,CP-V2205,CP-V805,IB-100,IB-1410,IB-1415,IB-1420,IB-1425,
 @optgroup.option("-n", "--name", help="FQDN of Infoblox member")
 @optgroup.option("--vip", required=True, help="VIP address of NIOS member")
 @optgroup.option("--subnetmask", required=True, help="Subnet mask of NIOS member")
-@optgroup.option("--gateyway", required=True, help="Gateway for VIP")
+@optgroup.option("--gateway", required=True, help="Gateway for VIP")
 @optgroup.option(
     "-u",
     "--username",
@@ -160,11 +159,18 @@ Hardware Type: CP-V1405,CP-V2205,CP-V805,IB-100,IB-1410,IB-1415,IB-1420,IB-1425,
     show_default=True,
     help="Infoblox admin username",
 )
-@optgroup.group("Optional Parameters")
+@optgroup.group("High Availability Parameters")
 @optgroup.option("--highavailability", is_flag=True, help="Enable HA ports")
 @optgroup.option("--lanha", help="HA LAN IP address")
 @optgroup.option("--lanhasubnet", help="HA LAN subnet mask")
 @optgroup.option("--lanhagateway", help="HA LAN gateway")
+@optgroup.group("MGMT Port Parameters")
+@optgroup.option("--mgmt", is_flag=True, help="Enable MGMT port")
+@optgroup.option("--mgmtvpn", is_flag=True, help="Enable VPN on MGMT port")
+@optgroup.option("--mgmtip", help="MGMT port IP")
+@optgroup.option("--mgmtsubnet", help="MGMT port subnet")
+@optgroup.option("--mgmtgw", help="MGMT port gateway")
+@optgroup.group("Optional Parameters")
 @optgroup.option(
     "-w", "--wapi-ver", default="2.11", show_default=True, help="Infoblox WAPI version"
 )
@@ -186,6 +192,11 @@ def main(
     lanha: str,
     lanhasubnet: str,
     lanhagateway: str,
+    mgmt: bool,
+    mgmtvpn: bool,
+    mgmtip: str,
+    mgmtsubnet: str,
+    mgmtgw: str,
     debug: bool,
 ) -> None:
     if debug:
@@ -201,44 +212,112 @@ def main(
     else:
         log.info("connected to Infoblox grid manager %s", wapi.grid_mgr)
     payload = {
-        "hostname": name,
-        "vip_setting": {"address": vip, "subnet_mask": mask, "gateway": gateway},
-        "pre_provisioning": {
-            "hardware_info": {"hwmodel": model, "hw_type": hwtype},
-            "licenses": licenses,
-        },
+        "host_name": name,
+        "platform": platform,
+        "config_addr_type": "IPV4",
+        "vip_setting": {"address": vip, "subnet_mask": subnetmask, "gateway": gateway},
     }
+    if mgmt:
+        payload.update(
+            {
+                "node_info": [
+                    {
+                        "mgmt_network_setting": {
+                            "address": mgmtip,
+                            "subnet_mask": mgmtsubnet,
+                            "gateway": mgmtgw,
+                        },
+                    }
+                ],
+                "mgmt_port_setting": {"enabled": True, "vpn_enabled": mgmtvpn},
+            }
+        )
     if highavailability:
         router_id = random.randint(1, 255)
         payload.update(
             {
                 "router_id": router_id,
                 "enable_ha": True,
-                "additional_ip_list": {
-                    "interface": "LAN_HA",
-                    "ipv4_network_setting": {
-                        "address": lanha,
-                        "subnet_mask": lanhasubnet,
-                        "gateway": lanhagateway,
-                    },
-                },
+                "node_info": [
+                    {
+                        "lan_ha_port_setting": {
+                            "address": lanha,
+                            "subnet_mask": lanhasubnet,
+                            "gateway": lanhagateway,
+                        },
+                    }
+                ],
             }
         )
+    if mgmt and highavailability:
+        router_id = random.randint(1, 255)
+        payload.update(
+            {
+                "mgmt_port_setting": {"enabled": True, "vpn_enabled": mgmtvpn},
+                "router_id": router_id,
+                "enable_ha": True,
+                "node_info": [
+                    {
+                        "lan_ha_port_setting": {
+                            "address": lanha,
+                            "subnet_mask": lanhasubnet,
+                            "gateway": lanhagateway,
+                        },
+                        "mgmt_network_setting": {
+                            "address": mgmtip,
+                            "subnet_mask": mgmtsubnet,
+                            "gateway": mgmtgw,
+                        },
+                    }
+                ],
+            }
+        )
+
+    log.info("Current member payload: %s", payload)
     try:
-        # Setup preprovisioning for Infoblox member
-        member_preprovision = wapi.post(
+        # Create member prior to preprovisioning the licenses
+        member_creation = wapi.post(
             "member",
-            params={payload},
+            json=payload,
         )
     except WapiRequestException as err:
         log.error(err)
         sys.exit(1)
-    if member_preprovision.status_code != 201:
-        log.error("member preprovisioning failed: %s", member_preprovision.text)
+    if member_creation.status_code != 201:
+        log.error("member %s creation failed: %s", name, member_creation.text)
     else:
-        log.info(
-            "member preprovisioning was successful: %s", member_preprovision.json()
-        )
+        log.info("member %s creation was successful: %s", name, member_creation.json())
+
+    # utilize member reference from creation
+    new_member = member_creation.json()
+
+    if model:
+        provision = {
+            "pre_provisioning": {
+                "hardware_info": [{"hwmodel": model}],
+                "licenses": licenses,
+            }
+        }
+
+    if hwtype:
+        provision = {
+            "pre_provisioning": {
+                "hardware_info": [{"hwtype": hwtype}],
+                "licenses": licenses,
+            }
+        }
+
+    # Setup preprovisioning for Infoblox member
+    try:
+        member_preprovision = wapi.put(new_member, json=provision)
+    except WapiRequestException as err:
+        log.error(err)
+        sys.exit(1)
+
+    if member_preprovision.status_code != 200:
+        log.error("license preprovisioning failed: %s", member_preprovision.text)
+    else:
+        log.info("license provisioning completed: %s", member_preprovision.json())
 
     sys.exit()
 
