@@ -8,6 +8,7 @@ A collection of Infoblox scripts using the ibx-sdk library developed by Infoblox
 | `nios_ptr.py` | script to interact with PTR records |
 | `nios_cname.py` | script to interact with CNAME records | 
 | `nios_mx.py` | script to interact with MX records |
+| `nios_preprovision.py` | preprovision nios members into grid |
 
 
 ## Security Directory
