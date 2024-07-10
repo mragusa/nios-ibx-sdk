@@ -34,6 +34,9 @@ Build basic record types inside of a lab for testing Grid/API functionality.
 @optgroup.group("Required Parameters")
 @optgroup.option("-g", "--grid-mgr", required=True, help="Infoblox Grid Manager")
 @optgroup.group("Optional Parameters")
+@optgroup.option("-p", "--primary", help="Auth zone grid primary")
+@optgroup.option("-s", "--secondary", help="Auth zone grid secondary")
+@optgroup.option("-n", "--nsgroup", help="Auth zone name server group")
 @optgroup.option(
     "-u",
     "--username",
@@ -46,7 +49,15 @@ Build basic record types inside of a lab for testing Grid/API functionality.
 )
 @optgroup.group("Logging Parameters")
 @optgroup.option("--debug", is_flag=True, help="enable verbose debug output")
-def main(grid_mgr: str, username: str, wapi_ver: str, debug: bool) -> None:
+def main(
+    grid_mgr: str,
+    username: str,
+    wapi_ver: str,
+    debug: bool,
+    primary: str,
+    secondary: str,
+    nsgroup: str,
+) -> None:
     if debug:
         increase_log_level()
     wapi.grid_mgr = grid_mgr
@@ -72,14 +83,12 @@ def main(grid_mgr: str, username: str, wapi_ver: str, debug: bool) -> None:
         {
             "zone_auth": {
                 "fqdn": "lab.domain.local",
-                "grid_primary": [{"name": "infoblox.localdomain"}],
                 "comment": "This is a example forward zone",
             }
         },
         {
             "zone_auth": {
                 "fqdn": "192.168.200.0/24",
-                "grid_primary": [{"name": "infoblox.localdomain"}],
                 "zone_format": "IPV4",
                 "comment": "This is an example reverse zone",
             }
@@ -215,6 +224,19 @@ def main(grid_mgr: str, username: str, wapi_ver: str, debug: bool) -> None:
             }
         },
     ]
+
+    if primary:
+        for entry in record_types:
+            if "zone_auth" in entry:
+                entry["zone_auth"]["grid_primary"] = [{"name": primary}]
+    if secondary:
+        for entry in record_types:
+            if "zone_auth" in entry:
+                entry["zone_auth"]["grid_secondaries"] = [{"name": secondary}]
+    if nsgroup:
+        for entry in record_types:
+            if "zone_auth" in entry:
+                entry["zone_auth"]["ns_group"] = nsgroup
 
     for record in record_types:
         for data in record:
