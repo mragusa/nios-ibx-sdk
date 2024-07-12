@@ -17,7 +17,7 @@ A collection of Infoblox scripts using the ibx-sdk library developed by Infoblox
 | :---: | :---: |
 | `nios_adp_profile.py` | Interact with ADP Profiles |
 | `nios_adp_implementation.py` | Setup inital ADP values for evaluation prior to production |
-
+| `nios_adp_stats.py` | Retieve last 30 mins of ADP statistics |
 
 
 
