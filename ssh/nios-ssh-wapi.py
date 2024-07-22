@@ -28,7 +28,11 @@ For more information: https://blogs.infoblox.com/community/turbocharge-your-info
 @optgroup.option("-d", "--disable", is_flag=True, help="Disable WAPI optimizatons")
 def main(grid: str, username: str, enable: bool, disable: bool, show: bool) -> None:
     if enable:
-        command = ["set httpd_client keepalive on", "set httpd_client keepalivetime 5", "set httpd_client maxrequest 2048"]
+        command = [
+            "set httpd_client keepalive on",
+            "set httpd_client keepalivetime 5",
+            "set httpd_client maxrequest 2048",
+        ]
     if disable:
         command = ["set httpd_client keepalive off"]
 
