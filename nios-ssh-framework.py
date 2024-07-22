@@ -25,8 +25,12 @@ Explaination of script
     "-u", "--username", default="admin", required=True, help="Infoblox admin username"
 )
 @optgroup.group("Optional Parameters")
+
+
 def main(grid: str, username: str) -> None:
+
     command = "show version"
+
     try:
         s = pxssh.pxssh()
         hostname = grid
