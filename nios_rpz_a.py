@@ -23,7 +23,14 @@ log = init_logger(
 wapi = Gift()
 
 help_text = """
-Edit as Needed
+Interact with RPZ A records in NIOS grid
+
+An RPZ Substitute (A Record) Rule maps a domain name to a substitute IPv4 address. To define a specific name-to-address mapping, add an Substitute (A Record) Rule to a previously defined Response Policy Zone.
+
+This record represents the substitution rule for DNS A records.
+
+WAPI Documentation: https://ipam.illinois.edu/wapidoc/objects/record.rpz.a.html 
+Admin Documentation: https://docs.infoblox.com/space/nios90/280400764/Infoblox+DNS+Firewall
 """
 
 
@@ -34,7 +41,7 @@ Edit as Needed
 @optgroup.group("Required Parameters")
 @optgroup.option("-g", "--grid-mgr", required=True, help="Infoblox Grid Manager")
 @optgroup.option(
-    "-z", "--zone", help="response policy zone in which the record resides"
+    "-rz", "--rpzone", help="response policy zone in which the record resides"
 )
 @optgroup.option("-n", "--name", help="The name for a record in FQDN format")
 @optgroup.option("-i", "--ipv4addr", help="IPv4 Address of the substitute rule")
@@ -70,7 +77,7 @@ def main(
     username: str,
     wapi_ver: str,
     debug: bool,
-    zone: str,
+    rpzone: str,
     name: str,
     ipv4addr: str,
     use_ttl: bool,
@@ -92,27 +99,66 @@ def main(
         sys.exit(1)
     else:
         log.info("connected to Infoblox grid manager %s", wapi.grid_mgr)
+
+    payload = {"name": name,}
+
+    if rpzone:
+        payload.update({"rp_zone": rpzone})
+    if ipv4addr:
+        payload.update({"ipv4addr": ipv4addr})
+    if comment:
+        payload.update({"comment": comment})
+    if disable:
+        payload.update({"disable": True})
+    if ttl:
+        payload.update({"ttl": ttl})
+    if use_ttl:
+        payload.update({"use_ttl": True})
+    if view:
+        payload.update({"view": view})
+    if zone:
+        payload.update({"zone": zone})
+
     if add:
         try:
             add_rpz_a = wapi.post(
-                "record:rpz:a", json={"name": name, "zone": zone, "ipv4addr": ipv4addr}
+                "record:rpz:a", json=payload
             )
         except WapiRequestException as err:
             log.error(err)
             sys.exit(1)
-    if update:
-        try:
-            update_rpz_a = wapi.get("record:rpz:a", params={"name": name})
-        except WapiRequestException as err:
-            log.error(err)
-            sys.exit(1)
-    if delete:
+        if add_rpz_a.status_code != 201:
+            log.error("RPZ record failed: %s", name)
+        else:
+            log.info("RPZ record added: %s", name)
+    if update or delete:
         try:
             # Retrieve RPZ A record from Infoblox appliance
-            del_rpz_a = wapi.get("record:rpz:a", params={"name": name})
+            rpz_a = wapi.get("record:rpz:a", params={"name": name})
         except WapiRequestException as err:
             log.error(err)
             sys.exit(1)
+        if rpz_a.status_code != 200:
+            log.error("RPZ record not found: %s", rpz_a.text)
+        else:
+            log.info("RPZ record found: %s", rpz_a.json())
+            rpz_a_record = rpz_a.json()
+            if update:
+                try:
+                    update_rpz_a = wapi.put(rpz_a_record["_ref"], json={payload})
+                except WapiRequestException as err:
+                    log.error(err)
+                    sys.exit(1)
+                if update_rpz_a.status_code != 200:
+                    log.error("RPZ record update failed: %s". update_rpz_a.text)
+                else:
+                    log.info("RPZ record update completed: %s". update_rpz_a.json())
+            if delete:
+                try:
+                    del_rpz_a = wapi.delete(rpz_a_record["_ref"])
+                except WapiRequestException as err:
+                    log.error(err)
+                    sys.exit(1)
 
     sys.exit()
 
