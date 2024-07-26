@@ -100,7 +100,9 @@ def main(
     else:
         log.info("connected to Infoblox grid manager %s", wapi.grid_mgr)
 
-    payload = {"name": name,}
+    payload = {
+        "name": name,
+    }
 
     if rpzone:
         payload.update({"rp_zone": rpzone})
@@ -121,9 +123,7 @@ def main(
 
     if add:
         try:
-            add_rpz_a = wapi.post(
-                "record:rpz:a", json=payload
-            )
+            add_rpz_a = wapi.post("record:rpz:a", json=payload)
         except WapiRequestException as err:
             log.error(err)
             sys.exit(1)
@@ -150,9 +150,9 @@ def main(
                     log.error(err)
                     sys.exit(1)
                 if update_rpz_a.status_code != 200:
-                    log.error("RPZ record update failed: %s". update_rpz_a.text)
+                    log.error("RPZ record update failed: %s".update_rpz_a.text)
                 else:
-                    log.info("RPZ record update completed: %s". update_rpz_a.json())
+                    log.info("RPZ record update completed: %s".update_rpz_a.json())
             if delete:
                 try:
                     del_rpz_a = wapi.delete(rpz_a_record["_ref"])
