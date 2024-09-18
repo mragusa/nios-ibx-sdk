@@ -52,6 +52,7 @@ Admin Documentation: https://docs.infoblox.com/space/nios90/280400764/Infoblox+D
 @optgroup.option("--use_ttl", is_flag=True, help="Use flag for: ttl")
 @optgroup.option(
     "--ttl",
+    type=int,
     help="Time To Live (TTL) value for record. A 32-bit unsigned integer that represents the duration, in seconds, for which the record is valid (cached)",
 )
 @optgroup.option("--view", help="name of the DNS View in which the record resides")

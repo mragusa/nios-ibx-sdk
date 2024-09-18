@@ -29,7 +29,7 @@ An RPZ Substitute (PTR Record) Rule object represents a Pointer (PTR) resource r
 
 This record represents the substitution rule for DNS PTR records.
 
-WAPI Documentation: https://ipam.illinois.edu/wapidoc/objects/record.rpz.a.html 
+WAPI Documentation: https://ipam.illinois.edu/wapidoc/objects/record.rpz.ptr.html 
 Admin Documentation: https://docs.infoblox.com/space/nios90/280400764/Infoblox+DNS+Firewall
 """
 
@@ -43,8 +43,16 @@ Admin Documentation: https://docs.infoblox.com/space/nios90/280400764/Infoblox+D
 @optgroup.option(
     "-rz", "--rpzone", help="response policy zone in which the record resides"
 )
-@optgroup.option("-n", "--name", help="The name of the RPZ Substitute (PTR Record) Rule object in FQDN format.")
-@optgroup.option("-p", "--ptrdname", help="The domain name of the RPZ Substitute (PTR Record) Rule object in FQDN format.")
+@optgroup.option(
+    "-n",
+    "--name",
+    help="The name of the RPZ Substitute (PTR Record) Rule object in FQDN format.",
+)
+@optgroup.option(
+    "-p",
+    "--ptrdname",
+    help="The domain name of the RPZ Substitute (PTR Record) Rule object in FQDN format.",
+)
 @optgroup.option("-4", "--ipv4addr", help="the IPv4 Address of the substitute rule")
 @optgroup.option("-6", "--ipv6addr", help="The IPv6 Address of the substitute rule.")
 @optgroup.option("-a", "--add", is_flag=True, help="Add RPZ PTR record")
@@ -54,6 +62,7 @@ Admin Documentation: https://docs.infoblox.com/space/nios90/280400764/Infoblox+D
 @optgroup.option("--use_ttl", is_flag=True, help="Use flag for: ttl")
 @optgroup.option(
     "--ttl",
+    type=int,
     help="Time To Live (TTL) value for record. A 32-bit unsigned integer that represents the duration, in seconds, for which the record is valid (cached)",
 )
 @optgroup.option("--view", help="name of the DNS View in which the record resides")

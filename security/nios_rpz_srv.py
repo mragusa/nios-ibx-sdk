@@ -44,17 +44,33 @@ Admin Documentation: https://docs.infoblox.com/space/nios90/280400764/Infoblox+D
     "-rz", "--rpzone", help="response policy zone in which the record resides"
 )
 @optgroup.option("-n", "--name", help="The name for a record in FQDN format")
-@optgroup.option("--port", type=int, help="The port of the Substitute (SRV Record) Rule. Valid values are from 0 to 65535 (inclusive), in 32-bit unsigned integer format.")
-@optgroup.option("--priority", type=int, help="The priority of the Substitute (SRV Record) Rule. Valid values are from 0 to 65535 (inclusive), in 32-bit unsigned integer format.")
-@optgroup.option("--weight", type=int, help="The weight of the Substitute (SRV Record) Rule. Valid values are from 0 to 65535 (inclusive), in 32-bit unsigned integer format.")
-@optgroup.option("--target", help="The target of the Substitute (SRV Record) Rule. This value can be in unicode format.")
+@optgroup.option(
+    "--port",
+    type=int,
+    help="The port of the Substitute (SRV Record) Rule. Valid values are from 0 to 65535 (inclusive), in 32-bit unsigned integer format.",
+)
+@optgroup.option(
+    "--priority",
+    type=int,
+    help="The priority of the Substitute (SRV Record) Rule. Valid values are from 0 to 65535 (inclusive), in 32-bit unsigned integer format.",
+)
+@optgroup.option(
+    "--weight",
+    type=int,
+    help="The weight of the Substitute (SRV Record) Rule. Valid values are from 0 to 65535 (inclusive), in 32-bit unsigned integer format.",
+)
+@optgroup.option(
+    "--target",
+    help="The target of the Substitute (SRV Record) Rule. This value can be in unicode format.",
+)
 @optgroup.option("-a", "--add", is_flag=True, help="Add RPZ A record")
 @optgroup.option("-u", "--update", is_flag=True, help="Update RPZ A record")
 @optgroup.option("-d", "--delete", is_flag=True, help="Delete RPZ A record")
 @optgroup.group("Optional Parameters")
 @optgroup.option("--use_ttl", is_flag=True, help="Use flag for: ttl")
 @optgroup.option(
-    "--ttl", type=int,
+    "--ttl",
+    type=int,
     help="Time To Live (TTL) value for record. A 32-bit unsigned integer that represents the duration, in seconds, for which the record is valid (cached)",
 )
 @optgroup.option("--view", help="name of the DNS View in which the record resides")

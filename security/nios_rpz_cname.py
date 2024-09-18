@@ -59,6 +59,7 @@ Admin Documentation: https://docs.infoblox.com/space/nios90/280400764/Infoblox+D
 @optgroup.option("--use_ttl", is_flag=True, help="Use flag for: ttl")
 @optgroup.option(
     "--ttl",
+    type=int,
     help="Time To Live (TTL) value for record. A 32-bit unsigned integer that represents the duration, in seconds, for which the record is valid (cached)",
 )
 @optgroup.option("--view", help="name of the DNS View in which the record resides")
@@ -152,7 +153,9 @@ def main(
             rpz_cname_record = rpz_cname.json()
             if update:
                 try:
-                    update_rpz_cname = wapi.put(rpz_cname_record["_ref"], json={payload})
+                    update_rpz_cname = wapi.put(
+                        rpz_cname_record["_ref"], json={payload}
+                    )
                 except WapiRequestException as err:
                     log.error(err)
                     sys.exit(1)

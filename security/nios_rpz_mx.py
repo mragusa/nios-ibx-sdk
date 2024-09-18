@@ -45,6 +45,12 @@ Admin Documentation: https://docs.infoblox.com/space/nios90/280400764/Infoblox+D
 )
 @optgroup.option("-n", "--name", help="The name for a record in FQDN format")
 @optgroup.option("-e", "--exchanger", help="Mail exchanger name in FQDN format.")
+@optgroup.option(
+    "-p",
+    "--preference",
+    type=int,
+    help="Preference value, 0 to 65535 (inclusive) in 32-bit unsigned integer format.",
+)
 @optgroup.option("-a", "--add", is_flag=True, help="Add RPZ MX record")
 @optgroup.option("-u", "--update", is_flag=True, help="Update RPZ MX record")
 @optgroup.option("-d", "--delete", is_flag=True, help="Delete RPZ MX record")
@@ -52,6 +58,7 @@ Admin Documentation: https://docs.infoblox.com/space/nios90/280400764/Infoblox+D
 @optgroup.option("--use_ttl", is_flag=True, help="Use flag for: ttl")
 @optgroup.option(
     "--ttl",
+    type=int,
     help="Time To Live (TTL) value for record. A 32-bit unsigned integer that represents the duration, in seconds, for which the record is valid (cached)",
 )
 @optgroup.option("--view", help="name of the DNS View in which the record resides")
@@ -80,6 +87,7 @@ def main(
     rpzone: str,
     name: str,
     exchanger: str,
+    preference: int,
     use_ttl: bool,
     ttl: int,
     view: str,
@@ -108,6 +116,8 @@ def main(
         payload.update({"rp_zone": rpzone})
     if ipv4addr:
         payload.update({"exchanger": mail_exchanger})
+    if preference:
+        payload.update({"preference": preference})
     if comment:
         payload.update({"comment": comment})
     if disable:

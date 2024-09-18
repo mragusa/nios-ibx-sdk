@@ -28,7 +28,7 @@ Interact with RPZ TXT records in NIOS grid
 An RPZ Substitute (TXT Record) Rule object represents the substitution rule for DNS TXT records.
 
 
-WAPI Documentation: https://ipam.illinois.edu/wapidoc/objects/record.rpz.a.html 
+WAPI Documentation: https://ipam.illinois.edu/wapidoc/objects/record.rpz.txt.html 
 Admin Documentation: https://docs.infoblox.com/space/nios90/280400764/Infoblox+DNS+Firewall
 """
 
@@ -43,7 +43,11 @@ Admin Documentation: https://docs.infoblox.com/space/nios90/280400764/Infoblox+D
     "-rz", "--rpzone", help="response policy zone in which the record resides"
 )
 @optgroup.option("-n", "--name", help="The name for a record in FQDN format")
-@optgroup.option("-t", "--text", help="Text associated with the record. It can contain up to 255 bytes per substring, up to a total of 512 bytes. To enter leading, trailing, or embedded spaces in the text, add quotes around the text to preserve the spaces")
+@optgroup.option(
+    "-t",
+    "--text",
+    help="Text associated with the record. It can contain up to 255 bytes per substring, up to a total of 512 bytes. To enter leading, trailing, or embedded spaces in the text, add quotes around the text to preserve the spaces",
+)
 @optgroup.option("-a", "--add", is_flag=True, help="Add RPZ TXT record")
 @optgroup.option("-u", "--update", is_flag=True, help="Update RPZ TXT record")
 @optgroup.option("-d", "--delete", is_flag=True, help="Delete RPZ TXT record")
@@ -51,6 +55,7 @@ Admin Documentation: https://docs.infoblox.com/space/nios90/280400764/Infoblox+D
 @optgroup.option("--use_ttl", is_flag=True, help="Use flag for: ttl")
 @optgroup.option(
     "--ttl",
+    type=int,
     help="Time To Live (TTL) value for record. A 32-bit unsigned integer that represents the duration, in seconds, for which the record is valid (cached)",
 )
 @optgroup.option("--view", help="name of the DNS View in which the record resides")
