@@ -25,7 +25,7 @@ wapi = Gift()
 help_text = """
 Interact with RPZ CNAME records in NIOS grid
 
-An RPZ Substitute (CNAME Record) Rule maps a domain name to a substitute canonical name. To define a specific name-to-name mapping, add an Substitute (CNAME Record) Rule to a previously defined Response Policy Zone.
+An RPZ CNAME record represents different RPZ rules, depending on the value of the canonical name. The intention of this object is to support QNAME Trigger policy. The QNAME policy trigger applies to requested domain names (QNAME). This record represents Passthru Domain Name Rule, Block Domain Name (No Such Domain) Rule, Block Domain Name (No Data) Rule and Substitute (Domain Name) Rule.
 
 If canonical name is empty, it is a Block Domain Name (No Such Domain) Rule.
 
