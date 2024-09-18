@@ -30,6 +30,7 @@ An RPZ Substitute (MX Record) Rule maps a domain name to a mail exchanger. A mai
 This record represents the substitution rule for DNS MX records.
 
 WAPI Documentation: https://ipam.illinois.edu/wapidoc/objects/record.rpz.mx.html 
+
 Admin Documentation: https://docs.infoblox.com/space/nios90/280400764/Infoblox+DNS+Firewall
 """
 

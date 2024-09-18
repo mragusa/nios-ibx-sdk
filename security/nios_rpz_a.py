@@ -30,6 +30,7 @@ An RPZ Substitute (A Record) Rule maps a domain name to a substitute IPv4 addres
 This record represents the substitution rule for DNS A records.
 
 WAPI Documentation: https://ipam.illinois.edu/wapidoc/objects/record.rpz.a.html 
+
 Admin Documentation: https://docs.infoblox.com/space/nios90/280400764/Infoblox+DNS+Firewall
 """
 

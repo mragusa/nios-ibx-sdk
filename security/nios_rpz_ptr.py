@@ -30,6 +30,7 @@ An RPZ Substitute (PTR Record) Rule object represents a Pointer (PTR) resource r
 This record represents the substitution rule for DNS PTR records.
 
 WAPI Documentation: https://ipam.illinois.edu/wapidoc/objects/record.rpz.ptr.html 
+
 Admin Documentation: https://docs.infoblox.com/space/nios90/280400764/Infoblox+DNS+Firewall
 """
 
