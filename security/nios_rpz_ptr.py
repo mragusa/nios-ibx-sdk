@@ -47,9 +47,9 @@ Admin Documentation: https://docs.infoblox.com/space/nios90/280400764/Infoblox+D
 @optgroup.option("-p", "--ptrdname", help="The domain name of the RPZ Substitute (PTR Record) Rule object in FQDN format.")
 @optgroup.option("-4", "--ipv4addr", help="the IPv4 Address of the substitute rule")
 @optgroup.option("-6", "--ipv6addr", help="The IPv6 Address of the substitute rule.")
-@optgroup.option("-a", "--add", is_flag=True, help="Add RPZ A record")
-@optgroup.option("-u", "--update", is_flag=True, help="Update RPZ A record")
-@optgroup.option("-d", "--delete", is_flag=True, help="Delete RPZ A record")
+@optgroup.option("-a", "--add", is_flag=True, help="Add RPZ PTR record")
+@optgroup.option("-u", "--update", is_flag=True, help="Update RPZ PTR record")
+@optgroup.option("-d", "--delete", is_flag=True, help="Delete RPZ PTR record")
 @optgroup.group("Optional Parameters")
 @optgroup.option("--use_ttl", is_flag=True, help="Use flag for: ttl")
 @optgroup.option(
