@@ -1,5 +1,21 @@
 # nios-ibx-sdk
 A collection of Infoblox scripts using the ibx-sdk library developed by Infoblox Professional Services
+
+## Requirements
+  - Python 3.10 or higher
+  - [ibx-sdk](https://github.com/Infoblox-PS/ibx-sdk)
+
+## Installation
+1. **Setup Python venv**
+```
+python3 -m venv venv
+```
+
+2. **Install ibx-sdk**
+```
+pip install git+https://github.com/Infoblox-PS/ibx-sdk.git
+```
+
 ## Operational Directory
 | Script File | Description |
 | :---: | :---: |
