@@ -147,9 +147,9 @@ def main(
             log.error(err)
             sys.exit(1)
         if rpz_ptr.status_code != 200:
-            log.error("RPZ record not found: %s", rpz_a.text)
+            log.error("RPZ record not found: %s", rpz_ptr.text)
         else:
-            log.info("RPZ record found: %s", rpz_a.json())
+            log.info("RPZ record found: %s", rpz_ptr.json())
             rpz_ptr_record = rpz_ptr.json()
             if update:
                 try:
@@ -158,9 +158,9 @@ def main(
                     log.error(err)
                     sys.exit(1)
                 if update_rpz_ptr.status_code != 200:
-                    log.error("RPZ record update failed: %s".update_rpz_a.text)
+                    log.error("RPZ record update failed: %s".update_rpz_ptr.text)
                 else:
-                    log.info("RPZ record update completed: %s".update_rpz_a.json())
+                    log.info("RPZ record update completed: %s".update_rpz_ptr.json())
             if delete:
                 try:
                     del_rpz_ptr = wapi.delete(rpz_ptr_record["_ref"])
