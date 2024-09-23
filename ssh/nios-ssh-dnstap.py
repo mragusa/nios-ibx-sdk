@@ -10,6 +10,7 @@ prompt = r".* Infoblox > "
 
 help_text = """
 Interact with Infoblox members via ssh to enable, disable or show DNS Tap 
+
 For more information:
     https://docs.infoblox.com/space/nios90/280760772/Configuring+dnstap
 """
