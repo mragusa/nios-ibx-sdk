@@ -10,6 +10,7 @@ prompt = r".* Infoblox > "
 
 help_text = """
 Enable WAPI optimizations on NIOS Grid Master
+
 For more information: https://blogs.infoblox.com/community/turbocharge-your-infoblox-restful-api-calls-part-1/
 """
 
