@@ -82,7 +82,7 @@ def main(
     record_types = [
         {
             "zone_auth": {
-                "fqdn": "lab.domain.local",
+                "fqdn": "lab.domain.com",
                 "comment": "This is a example forward zone",
             }
         },
@@ -95,131 +95,131 @@ def main(
         },
         {
             "record:a": {
-                "name": "lab.domain.local",
+                "name": "lab.domain.com",
                 "ipv4addr": "192.168.200.100",
                 "comment": "Example A record",
             }
         },
         {
             "record:a": {
-                "name": "database.lab.domain.local",
+                "name": "database.lab.domain.com",
                 "ipv4addr": "192.168.200.200",
                 "comment": "Example A record",
             }
         },
         {
             "record:a": {
-                "name": "smtp1.lab.domain.local",
+                "name": "smtp1.lab.domain.com",
                 "ipv4addr": "192.168.200.150",
                 "comment": "Example A record",
             }
         },
         {
             "record:a": {
-                "name": "smtp2.lab.domain.local",
+                "name": "smtp2.lab.domain.com",
                 "ipv4addr": "192.168.200.151",
                 "comment": "Example A record",
             }
         },
         {
             "record:a": {
-                "name": "smtp3.lab.domain.local",
+                "name": "smtp3.lab.domain.com",
                 "ipv4addr": "192.168.200.152",
                 "comment": "Example A record",
             }
         },
         {
             "record:a": {
-                "name": "smtp4.lab.domain.local",
+                "name": "smtp4.lab.domain.com",
                 "ipv4addr": "192.168.200.153",
                 "comment": "Example A record",
             }
         },
         {
             "record:cname": {
-                "name": "www.lab.domain.local",
-                "canonical": "lab.domain.local",
+                "name": "www.lab.domain.com",
+                "canonical": "lab.domain.com",
                 "comment": "This is an example CNAME record",
             }
         },
         {
             "record:cname": {
-                "name": "db.lab.domain.local",
-                "canonical": "database.domain.local",
+                "name": "db.lab.domain.com",
+                "canonical": "database.domain.com",
                 "comment": "This is an example CNAME record",
             }
         },
         {
             "record:mx": {
-                "name": "lab.domain.local",
+                "name": "lab.domain.com",
                 "preference": 20,
-                "mail_exchanger": "smtp1.lab.domain.local",
+                "mail_exchanger": "smtp1.lab.domain.com",
                 "comment": "This is an example MX record",
             }
         },
         {
             "record:mx": {
-                "name": "lab.domain.local",
+                "name": "lab.domain.com",
                 "preference": 20,
-                "mail_exchanger": "smtp2.lab.domain.local",
+                "mail_exchanger": "smtp2.lab.domain.com",
                 "comment": "This is an example MX record",
             }
         },
         {
             "record:mx": {
-                "name": "lab.domain.local",
+                "name": "lab.domain.com",
                 "preference": 40,
-                "mail_exchanger": "smtp3.lab.domain.local",
+                "mail_exchanger": "smtp3.lab.domain.com",
                 "comment": "This is an example MX record",
             }
         },
         {
             "record:mx": {
-                "name": "lab.domain.local",
+                "name": "lab.domain.com",
                 "preference": 40,
-                "mail_exchanger": "smtp4.lab.domain.local",
+                "mail_exchanger": "smtp4.lab.domain.com",
                 "comment": "This is an example MX record",
             }
         },
         {
             "record:ptr": {
                 "ipv4addr": "192.168.200.100",
-                "ptrdname": "lab.domain.local",
+                "ptrdname": "lab.domain.com",
                 "comment": "This is an example PTR",
             }
         },
         {
             "record:ptr": {
                 "ipv4addr": "192.168.200.200",
-                "ptrdname": "database.lab.domain.local",
+                "ptrdname": "database.lab.domain.com",
                 "comment": "This is an example PTR",
             }
         },
         {
             "record:ptr": {
                 "ipv4addr": "192.168.200.150",
-                "ptrdname": "smtp1.lab.domain.local",
+                "ptrdname": "smtp1.lab.domain.com",
                 "comment": "This is an example PTR",
             }
         },
         {
             "record:ptr": {
                 "ipv4addr": "192.168.200.151",
-                "ptrdname": "smtp2.lab.domain.local",
+                "ptrdname": "smtp2.lab.domain.com",
                 "comment": "This is an example PTR",
             }
         },
         {
             "record:ptr": {
                 "ipv4addr": "192.168.200.152",
-                "ptrdname": "smtp3.lab.domain.local",
+                "ptrdname": "smtp3.lab.domain.com",
                 "comment": "This is an example PTR",
             }
         },
         {
             "record:ptr": {
                 "ipv4addr": "192.168.200.153",
-                "ptrdname": "smtp4.lab.domain.local",
+                "ptrdname": "smtp4.lab.domain.com",
                 "comment": "This is an example PTR",
             }
         },
