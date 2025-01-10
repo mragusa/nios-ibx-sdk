@@ -68,13 +68,6 @@ def main(
         sys.exit(1)
     else:
         log.info("connected to Infoblox grid manager %s", wapi.grid_mgr)
-    #try:
-        # Retrieve network view from Infoblox appliance
-        #network_view = wapi.get("view")
-        #print(network_view.json())
-    #except WapiRequestException as err:
-    #    log.error(err)
-    #    sys.exit(2)
 
     # Common record types
     standard_record_types = [
@@ -122,91 +115,125 @@ def main(
         },
     ]
 
-    security_record_Types = []
+    record_references = []
 
     print("Checking Grid Members")
     members(wapi)
 
+    print("Testing API Functionality")
     with Progress() as progress:
-        test1 = progress.add_task("[green]Successful:", total=len(standard_record_types)*2)
-        test2 = progress.add_task("[red]Partial Failure:", total=len(standard_record_types)*2)
-        test3 = progress.add_task("[cyan]Failed:", total="100")
-        while not progress.finished:
-            # check if record types are successfully added and deleted
-            result = add_record(wapi, standard_record_types)
-            if result == "success":
-                progress.update(test1, advance=1)
-                result2 = delete_record(wapi, something)
-                if result2 == "success":
-                    progress.update(test1, advance=1)
+        create_results = progress.add_task(
+            "[green]Record Creation API:", total=len(standard_record_types)
+        )
+        failure_results = progress.add_task(
+            "[red]API Failures:", total=len(standard_record_types) * 2
+        )
+        for record in standard_record_types:
+            for data in record:
+                result, ref = add_record(wapi, data, record[data])
+                if result == "success":
+                    record_references.append(ref)
+                    progress.update(create_results, advance=1)
                 else:
-                    progress.update(test2, advance=1)
+                    progress.update(failure_results, advance=1)
+        record_references = record_references[:-4]
+        delete_results = progress.add_task(
+            "[blue]Record Delete API:", total=len(record_references)
+        )
+        for ref in record_references:
+            result2 = delete_record(wapi, ref)
+            if result2 == "success":
+                progress.update(delete_results, advance=1)
             else:
-                progress.update(test3, advance=1)
+                progress.update(failure_results, advance=1)
 
     sys.exit()
 
 
-#    if primary:
-#        for entry in record_types:
-#            if "zone_auth" in entry:
-#                entry["zone_auth"]["grid_primary"] = [{"name": primary}]
-#    if secondary:
-#        for entry in record_types:
-#            if "zone_auth" in entry:
-#                entry["zone_auth"]["grid_secondaries"] = [{"name": secondary}]
-#    if nsgroup:
-#        for entry in record_types:
-#            if "zone_auth" in entry:
-#                entry["zone_auth"]["ns_group"] = nsgroup
-
 # Add records to test add, delete ability
-def add_record(wapi, record_types):
-    for record in record_types:
-        for data in record:
-            try:
-                # Create DNS zone object
-                response = wapi.post(data, json=record[data])
-                # Post requests return 201 status if successful: https://ipam.illinois.edu/wapidoc/index.html?highlight=response%20code#post
-                if response.status_code != 201:
-                    #print(f"{data} creation error: {response.text}")
-                    return("fail")
-                else:
-                    #print(f"{data} creation successful: {response.json()}")
-                    return("success")
-            except WapiRequestException as err:
-                log.error(err)
-                #sys.exit(1)
-
-def delete_record(wapi, ref):
-    response = wapi.post(data, ref)
+def add_record(wapi, record_type, data):
     try:
-        if response.status_code != 200:
-            return("fail")
-        else:
-            return("success")
+        response = wapi.post(record_type, json=data)
     except WapiRequestException as err:
         log.error(err)
+        # Post requests return 201 status if successful: https://ipam.illinois.edu/wapidoc/index.html?highlight=response%20code#post
+    if response.status_code != 201:
+        return "fail"
+    else:
+        record_ref = response.json()
+        return ("success", record_ref)
+
+
+def delete_record(wapi, ref):
+    try:
+        response = wapi.delete(ref)
+    except WapiRequestException as err:
+        log.error(err)
+    if response.status_code != 200:
+        return "fail"
+    else:
+        return "success"
 
 
 def members(wapi):
     table = Table(title="Infoblox Grid Member: Service Status")
-    table.add_column("Grid Hostname", justify="center", style="cyan", no_wrap=True)
-    table.add_column("Grid Service", justify="center", style="purple", no_wrap=True)
-    table.add_column("Service Status", justify="center", style="blue", no_wrap=True)
-    response = wapi.get("member")
+    table.add_column("Grid Hostname", justify="center", no_wrap=True)
+    table.add_column("Grid Service", justify="center", no_wrap=True)
+    table.add_column("Service Status", justify="center", no_wrap=True)
+    table.add_column("Description", justify="center", no_wrap=True)
+    response = wapi.get(
+        "member",
+        params={
+            "_return_fields": [
+                "host_name",
+                "service_status",
+                "vip_setting",
+                "node_info",
+            ]
+        },
+    )
     if response.status_code != 200:
-        print(response.status_code, response.text) 
+        print(response.status_code, response.text)
     else:
-        print(response.json())
         members = response.json()
-        for grd_mem in members["results"]:
-            #print(grid_mem["host_name"], grid_mem["comment"])
-            #print(grid_mem["service_status"])
-            for service in grid_mem["service_status"]:
-                table.add_row(grid_mem["host_name"], service["service"], service["status"])
+        for grd_mem in members:
+            for service in grd_mem["service_status"]:
+                if service["status"] == "INACTIVE" and "description" in service:
+                    table.add_row(
+                        grd_mem["host_name"],
+                        service["service"],
+                        service["status"],
+                        service["description"],
+                        style="grey54",
+                    )
+                elif service["status"] == "WORKING" and "description" in service:
+                    table.add_row(
+                        grd_mem["host_name"],
+                        service["service"],
+                        service["status"],
+                        service["description"],
+                        style="green1",
+                    )
+                elif service["status"] == "WARNING" and "description" in service:
+                    table.add_row(
+                        grd_mem["host_name"],
+                        service["service"],
+                        service["status"],
+                        service["description"],
+                        style="yellow",
+                    )
+                else:
+                    table.add_row(
+                        grd_mem["host_name"],
+                        service["service"],
+                        service["status"],
+                        "None",
+                        style="dark_red",
+                    )
+
     console = Console()
     console.print(table)
+
 
 if __name__ == "__main__":
     main()
