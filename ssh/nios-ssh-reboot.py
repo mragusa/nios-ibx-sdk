@@ -28,9 +28,8 @@ For more information:
 @optgroup.group("Optional Parameters")
 @optgroup.option("-r", "--reboot", is_flag=True, help="Reboot Grid Member")
 @optgroup.option("-s", "--shutdown", is_flag=True, help="Shutdown Grid Member")
-def main(
-    grid: str, username: str, enable: bool, disable: bool, show: bool, statistics: bool
-) -> None:
+def main(grid: str, username: str, reboot: bool, shutdown: bool) -> None:
+    command = ""
     if reboot:
         command = "reboot"
     if shutdown:
@@ -45,6 +44,7 @@ def main(
         s.login(hostname, username, password, auto_prompt_reset=False)
         s.prompt()  # match the prompt
         s.sendline(command)  # run a command
+        s.sendline("y")  # run a command
         s.prompt()  # match the prompt
         print(s.before.decode())  # print everything before the prompt.
         s.logout()
