@@ -5,9 +5,7 @@ import getpass
 import sys
 import click
 from click_option_group import optgroup
-
 from ibx_sdk.logger.ibx_logger import init_logger, increase_log_level
-
 from ibx_sdk.nios.exceptions import WapiRequestException
 from ibx_sdk.nios.gift import Gift
 
@@ -23,7 +21,7 @@ log = init_logger(
 wapi = Gift()
 
 help_text = """
-Edit as Needed
+Basic Infoblox script using IBX-SDK
 """
 
 
@@ -42,7 +40,11 @@ Edit as Needed
     help="Infoblox admin username",
 )
 @optgroup.option(
-    "-w", "--wapi-ver", default="2.11", show_default=True, help="Infoblox WAPI version"
+    "-w",
+    "--wapi-ver",
+    default="2.12.3",
+    show_default=True,
+    help="Infoblox WAPI version",
 )
 @optgroup.group("Logging Parameters")
 @optgroup.option("--debug", is_flag=True, help="enable verbose debug output")
@@ -54,18 +56,21 @@ def main(grid_mgr: str, username: str, wapi_ver: str, debug: bool) -> None:
     password = getpass.getpass(f"Enter password for [{username}]: ")
     try:
         wapi.connect(username=username, password=password)
-    except WapiRequest as err:
-        log.error(err)
-        sys.exit(1)
-    else:
-        log.info("connected to Infoblox grid manager %s", wapi.grid_mgr)
-    try:
-        # Retrieve network view from Infoblox appliance
-        network_view = wapi.get("view")
-        print(network_view.json())
     except WapiRequestException as err:
         log.error(err)
         sys.exit(1)
+    else:
+        log.info("Connected to Infoblox grid manager %s", wapi.grid_mgr)
+    try:
+        # Retrieve network view from Infoblox appliance
+        network_view = wapi.get("view")
+    except WapiRequestException as err:
+        log.error(err)
+        sys.exit(1)
+    if network_view.status_code != 200:
+        print(network_view.status_code, network_view.text)
+    else:
+        print(network_view.json())
 
     sys.exit()
 
