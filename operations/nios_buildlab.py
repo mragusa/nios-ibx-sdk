@@ -94,6 +94,13 @@ def main(
             }
         },
         {
+            "zone_auth": {
+                "fqdn": "192.168.1.0/24",
+                "zone_format": "IPV4",
+                "comment": "This is an example reverse zone",
+            }
+        },
+        {
             "record:a": {
                 "name": "lab.domain.com",
                 "ipv4addr": "192.168.200.100",
