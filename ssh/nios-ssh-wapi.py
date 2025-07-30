@@ -25,9 +25,14 @@ For more information: https://blogs.infoblox.com/community/turbocharge-your-info
     "-u", "--username", default="admin", required=True, help="Infoblox admin username"
 )
 @optgroup.group("Optional Parameters")
-@optgroup.option("-e", "--enable", is_flag=True, help="Enable WAPI optimizations")
-@optgroup.option("-d", "--disable", is_flag=True, help="Disable WAPI optimizatons")
-def main(grid: str, username: str, enable: bool, disable: bool, show: bool) -> None:
+@optgroup.option(
+    "-e", "--enable", default=False, is_flag=True, help="Enable WAPI optimizations"
+)
+@optgroup.option(
+    "-d", "--disable", default=False, is_flag=True, help="Disable WAPI optimizatons"
+)
+def main(grid: str, username: str, enable: bool, disable: bool) -> None:
+    command = []
     if enable:
         command = [
             "set httpd_client keepalive on",
