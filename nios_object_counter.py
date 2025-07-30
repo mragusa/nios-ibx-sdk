@@ -21,29 +21,37 @@ log = init_logger(
 wapi = Gift()
 print(
     r"""
-▐▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▌
-▐                                                                                       ▌
-▐     <-. (`-')_  _                 (`-').->                                            ▌
-▐        \( OO) )(_)         .->    ( OO)_                                              ▌
-▐     ,--./ ,--/ ,-(`-')(`-')----. (_)--\_)                                             ▌
-▐     |   \ |  | | ( OO)( OO).-.  '/    _ /                                             ▌
-▐     |  . '|  |)|  |  )( _) | |  |\_..`--.                                             ▌
-▐     |  |\    |(|  |_/  \|  |)|  |.-._)   \                                            ▌
-▐     |  | \   | |  |'->  '  '-'  '\       /                                            ▌
-▐     `--'  `--' `--'      `-----'  `-----'                                             ▌
-▐      (`-')  _ (`-')      _  (`-')              (`-') (`-')      (`-')  _   (`-')      ▌
-▐      ( OO).-/ (OO )_.->  \-.(OO )     .->   <-.(OO ) ( OO).->   ( OO).-/<-.(OO )      ▌
-▐     (,------. (_| \_)--. _.'    \(`-')----. ,------,)/    '._  (,------.,------,)     ▌
-▐      |  .---' \  `.'  / (_...--''( OO).-.  '|   /`. '|'--...__) |  .---'|   /`. '     ▌
-▐     (|  '--.   \    .') |  |_.' |( _) | |  ||  |_.' |`--.  .--'(|  '--. |  |_.' |     ▌
-▐      |  .--'   .'    \  |  .___.' \|  |)|  ||  .   .'   |  |    |  .--' |  .   .'     ▌
-▐      |  `---. /  .'.  \ |  |       '  '-'  '|  |\  \    |  |    |  `---.|  |\  \      ▌
-▐      `------'`--'   '--'`--'        `-----' `--' '--'   `--'    `------'`--' '--'     ▌
-▐                                                                                       ▌
-▐▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▌
+.------------------------------------------------------------------------------------.
+|                                                                                    |
+|     <-. (`-')_   _                  (`-').->                                       |
+|        \( OO) ) (_)          .->    ( OO)_                                         |
+|     ,--./ ,--/  ,-(`-') (`-')----. (_)--\_)                                        |
+|     |   \ |  |  | ( OO) ( OO).-.  '/    _ /                                        |
+|     |  . '|  |) |  |  ) ( _) | |  |\_..`--.                                        |
+|     |  |\    | (|  |_/   \|  |)|  |.-._)   \                                       |
+|     |  | \   |  |  |'->   '  '-'  '\       /                                       |
+|     `--'  `--'  `--'       `-----'  `-----'                                        |
+|                <-.(`-')             (`-')  _            (`-')                      |
+|          .->    __( OO)             ( OO).-/  _         ( OO).->                   |
+|     (`-')----. '-'---.\     <-.--. (,------.  \-,-----. /    '._                   |
+|     ( OO).-.  '| .-. (/   (`-'| ,|  |  .---'   |  .--./ |'--...__)                 |
+|     ( _) | |  || '-' `.)  (OO |(_| (|  '--.   /_) (`-') `--.  .--'                 |
+|      \|  |)|  || /`'.  | ,--. |  |  |  .--'   ||  |OO )    |  |                    |
+|       '  '-'  '| '--'  / |  '-'  /  |  `---. (_'  '--'\    |  |                    |
+|        `-----' `------'   `-----'   `------'    `-----'    `--'                    |
+|                                      <-. (`-')_ (`-')       (`-')  _    (`-')      |
+|      _              .->        .->      \( OO) )( OO).->    ( OO).-/ <-.(OO )      |
+|      \-,-----. (`-')----. ,--.(,--.  ,--./ ,--/ /    '._   (,------. ,------,)     |
+|       |  .--./ ( OO).-.  '|  | |(`-')|   \ |  | |'--...__)  |  .---' |   /`. '     |
+|      /_) (`-') ( _) | |  ||  | |(OO )|  . '|  |)`--.  .--' (|  '--.  |  |_.' |     |
+|      ||  |OO )  \|  |)|  ||  | | |  \|  |\    |    |  |     |  .--'  |  .   .'     |
+|     (_'  '--'\   '  '-'  '\  '-'(_ .'|  | \   |    |  |     |  `---. |  |\  \      |
+|        `-----'    `-----'  `-----'   `--'  `--'    `--'     `------' `--' '--'     |
+|                                                                                    |
+'------------------------------------------------------------------------------------'
 """
 )
-help_text = "Infoblox NIOS Exporter"
+help_text = "Infoblox NIOS Object Counter"
 
 infoblox_obj_types = [
     "ad_auth_service",
@@ -81,21 +89,21 @@ infoblox_obj_types = [
     # "discovery",
     "discovery:credentialgroup",
     # "discovery:device",
-    "discovery:devicecomponent",
-    "discovery:deviceinterface",
-    "discovery:deviceneighbor",
-    "discovery:devicesupportbundle",
-    "discovery:diagnostictask",
-    "discovery:gridproperties",
-    "discovery:memberproperties",
-    "discovery:sdnnetwork",
-    "discovery:status",
-    "discovery:vrf",
-    "discoverytask",
+    # "discovery:devicecomponent",
+    # "discovery:deviceinterface",
+    # "discovery:deviceneighbor",
+    # "discovery:devicesupportbundle",
+    # "discovery:diagnostictask",
+    # "discovery:gridproperties",
+    # "discovery:memberproperties",
+    # "discovery:sdnnetwork",
+    # "discovery:status",
+    # "discovery:vrf",
+    # "discoverytask",
     "distributionschedule",
     "dns64group",
-    "dtc",
-    "dtc:allrecords",
+    # "dtc",
+    # "dtc:allrecords",
     "dtc:certificate",
     "dtc:lbdn",
     "dtc:monitor",
@@ -107,20 +115,20 @@ infoblox_obj_types = [
     "dtc:monitor:tcp",
     "dtc:object",
     "dtc:pool",
-    "dtc:record:a",
-    "dtc:record:aaaa",
-    "dtc:record:cname",
-    "dtc:record:naptr",
-    "dtc:record:srv",
+    # "dtc:record:a",
+    # "dtc:record:aaaa",
+    # "dtc:record:cname",
+    # "dtc:record:naptr",
+    # "dtc:record:srv",
     "dtc:server",
     "dtc:topology",
     "dtc:topology:label",
     "dtc:topology:rule",
     "dxl:endpoint",
     "extensibleattributedef",
-    "federatedrealms",
-    "fedipamop",
-    "fileop",
+    # "federatedrealms",
+    # "fedipamop",
+    # "fileop",
     "filterfingerprint",
     "filtermac",
     "filternac",
@@ -130,8 +138,8 @@ infoblox_obj_types = [
     "fixedaddress",
     "fixedaddresstemplate",
     "ftpuser",
-    "gcpdnstaskgroup",
-    "gcpuser",
+    # "gcpdnstaskgroup",
+    # "gcpuser",
     "gmcgroup",
     "gmcschedule",
     "grid",
@@ -149,7 +157,7 @@ infoblox_obj_types = [
     "grid:maxminddbinfo",
     "grid:member:cloudapi",
     "grid:servicerestart:group",
-    "grid:servicerestart:group:order",
+    # "grid:servicerestart:group:order",
     "grid:servicerestart:request",
     "grid:servicerestart:request:changedobject",
     "grid:servicerestart:status",
@@ -159,12 +167,12 @@ infoblox_obj_types = [
     "hostnamerewritepolicy",
     "hsm:allgroups",
     "hsm:entrustnshieldgroup",
-    "hsm:safenetgroup",
-    "hsm:thalesgroup",
+    # "hsm:safenetgroup",
+    # "hsm:thalesgroup",
     "hsm:thaleslunagroup",
     "ipam:statistics",
-    "ipv4address",
-    "ipv6address",
+    # "ipv4address",
+    # "ipv6address",
     "ipv6dhcpoptiondefinition",
     "ipv6dhcpoptionspace",
     "ipv6filteroption",
@@ -191,7 +199,7 @@ infoblox_obj_types = [
     "member:parentalcontrol",
     "member:threatinsight",
     "member:threatprotection",
-    "membercloudsync",
+    # "membercloudsync",
     "memberdfp",
     "msserver",
     "msserver:adsites:domain",
@@ -199,11 +207,11 @@ infoblox_obj_types = [
     "msserver:dhcp",
     "msserver:dns",
     "mssuperscope",
-    "multiregions",
+    # "multiregions",
     "namedacl",
     "natgroup",
     "network",
-    "network_discovery",
+    # "network_discovery",
     "networkcontainer",
     "networktemplate",
     "networkuser",
@@ -216,14 +224,14 @@ infoblox_obj_types = [
     "nsgroup:forwardingmember",
     "nsgroup:forwardstubserver",
     "nsgroup:stubmember",
-    "orderedranges",
-    "orderedresponsepolicyzones",
+    # "orderedranges",
+    # "orderedresponsepolicyzones",
     "outbound:cloudclient",
-    "parentalcontrol:avp",
-    "parentalcontrol:blockingpolicy",
-    "parentalcontrol:subscriber",
-    "parentalcontrol:subscriberrecord",
-    "parentalcontrol:subscribersite",
+    # "parentalcontrol:avp",
+    # "parentalcontrol:blockingpolicy",
+    # "parentalcontrol:subscriber",
+    # "parentalcontrol:subscriberrecord",
+    # "parentalcontrol:subscribersite",
     "permission",
     "pxgrid:endpoint",
     "radius:authservice",
@@ -269,8 +277,8 @@ infoblox_obj_types = [
     "record:txt",
     "record:unknown",
     "recordnamepolicy",
-    "request",
-    "restartservicestatus",
+    # "request",
+    # "restartservicestatus",
     "rir",
     "rir:organization",
     "roaminghost",
@@ -278,7 +286,7 @@ infoblox_obj_types = [
     "saml:authservice",
     "scavengingtask",
     "scheduledtask",
-    "search",
+    # "search",
     "sharednetwork",
     "sharedrecord:a",
     "sharedrecord:aaaa",
@@ -292,11 +300,11 @@ infoblox_obj_types = [
     "smartfolder:personal",
     "snmpuser",
     "superhost",
-    "superhostchild",
+    # "superhostchild",
     "syslog:endpoint",
     "tacacsplus:authservice",
     "taxii",
-    "tftpfiledir",
+    # "tftpfiledir",
     "threatinsight:allowlist",
     "threatinsight:cloudclient",
     "threatinsight:insight_allowlist",
@@ -311,7 +319,7 @@ infoblox_obj_types = [
     "threatprotection:statistics",
     "upgradegroup",
     "upgradeschedule",
-    "upgradestatus",
+    # "upgradestatus",
     "userprofile",
     "vdiscoverytask",
     "view",
@@ -356,8 +364,7 @@ def main(grid_mgr: str, username: str, wapi_ver: str, debug: bool) -> None:
     wapi.grid_mgr = grid_mgr
     wapi.wapi_ver = wapi_ver
     wapi.timeout = 600
-    # password = getpass.getpass(f"Enter password for [{username}]: ")
-    password = "123@BLOXlab"
+    password = getpass.getpass(f"Enter password for [{username}]: ")
     try:
         wapi.connect(username=username, password=password)
     except WapiRequestException as err:
