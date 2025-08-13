@@ -91,7 +91,7 @@ wapi_mapping = {
 @optgroup.group("Required Parameters")
 @optgroup.option("-g", "--grid-mgr", required=True, help="Infoblox Grid Manager")
 @optgroup.option("-n", "--new-grid", required=True, help="New Infoblox Grid Manager")
-@optgroup.group("File Type")
+@optgroup.group("Import Object Type")
 @optgroup.option(
     "-c",
     "--choice",
@@ -109,7 +109,7 @@ wapi_mapping = {
 @optgroup.option(
     "-w",
     "--wapi-ver",
-    default="2.12.3",
+    default="2.12.6",
     show_default=True,
     help="Infoblox WAPI version",
 )
@@ -271,7 +271,8 @@ def add_ibx_obj(selection, data):
         if new_object.status_code != 201:
             print(new_object.status_code, new_object.text)
         else:
-            print(new_object.json())
+            print(selection, new_object.json())
+            log.info("Created Object: %s %s", selection, new_object.json())
     except WapiRequestException as err:
         print(err)
 
