@@ -1,4 +1,23 @@
 #!/usr/bin/env python3
+# TODO
+# Automatically downgrade required EA to optional for csv exports
+# Add flag to automate entire migration
+# Update help menu to allow piece meal migration ie user, role, zones
+# Update Output to show step processing
+# Determine what can be exported via CSV and reimported
+# Determine what can be exported via CSV export and what requires API
+# Find way to update data in transit, ie change member, nsgroup, discovery member
+# Determine default view and see if view name needs to be changed
+# Script Process
+# 1. Migrate Extensible extensible attributes
+# 2. Migrate roles, groups, users
+# 3. Migrate network, dns, vlan (static and ranges) views
+# 4, Migrate network containers and networks
+# 5. Migrate DHCP Data
+# 6. Migrate DNS Data
+#       - Host records
+#       - Standard Records
+# 7. Compare object counts
 
 
 import getpass
@@ -20,9 +39,41 @@ log = init_logger(
 
 wapi = Gift()
 newgrd = Gift()
+print(
+    r"""
+.--------------------------------------------------------------------------------------------------------.
+|                                                                                                        |
+|                             <-. (`-')_   _                  (`-').->                                   |
+|                                \( OO) ) (_)          .->    ( OO)_                                     |
+|                             ,--./ ,--/  ,-(`-') (`-')----. (_)--\_)                                    |
+|                             |   \ |  |  | ( OO) ( OO).-.  '/    _ /                                    |
+|                             |  . '|  |) |  |  ) ( _) | |  |\_..`--.                                    |
+|                             |  |\    | (|  |_/   \|  |)|  |.-._)   \                                   |
+|                             |  | \   |  |  |'->   '  '-'  '\       /                                   |
+|                             `--'  `--'  `--'       `-----'  `-----'                                    |
+|     <-. (`-')    _                    (`-')   (`-')  _  (`-')        _                 <-. (`-')_      |
+|        \(OO )_  (_)         .->    <-.(OO )   (OO ).-/  ( OO).->    (_)          .->      \( OO) )     |
+|     ,--./  ,-.) ,-(`-')  ,---(`-') ,------,)  / ,---.   /    '._    ,-(`-') (`-')----. ,--./ ,--/      |
+|     |   `.'   | | ( OO) '  .-(OO ) |   /`. '  | \ /`.\  |'--...__)  | ( OO) ( OO).-.  '|   \ |  |      |
+|     |  |'.'|  | |  |  ) |  | .-, \ |  |_.' |  '-'|_.' | `--.  .--'  |  |  ) ( _) | |  ||  . '|  |)     |
+|     |  |   |  |(|  |_/  |  | '.(_/ |  .   .' (|  .-.  |    |  |    (|  |_/   \|  |)|  ||  |\    |      |
+|     |  |   |  | |  |'-> |  '-'  |  |  |\  \   |  | |  |    |  |     |  |'->   '  '-'  '|  | \   |      |
+|     `--'   `--' `--'     `-----'   `--' '--'  `--' `--'    `--'     `--'       `-----' `--'  `--'      |
+|                             (`-')                                                                      |
+|                             ( OO).->        .->        .->      <-.                                    |
+|                             /    '._   (`-')----. (`-')----.  ,--. )                                   |
+|                             |'--...__) ( OO).-.  '( OO).-.  ' |  (`-')                                 |
+|                             `--.  .--' ( _) | |  |( _) | |  | |  |OO )                                 |
+|                                |  |     \|  |)|  | \|  |)|  |(|  '__ |                                 |
+|                                |  |      '  '-'  '  '  '-'  ' |     |'                                 |
+|                                `--'       `-----'    `-----'  `-----'                                  |
+|                                                                                                        |
+'--------------------------------------------------------------------------------------------------------'
+"""
+)
 
 help_text = """
-Migrate Users, Groups, and Roles from Infoblox CSV export files
+Migrate NIOS to NIOS: Using WAPI and CSV exports to directly move data from one grid to another.
 """
 
 wapi_mapping = {
