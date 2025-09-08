@@ -102,7 +102,7 @@ def main(
     password = getpass.getpass(f"Enter password for [{username}]: ")
     try:
         wapi.connect(username=username, password=password)
-    except WapiRequest as err:
+    except WapiRequestException as err:
         log.error(err)
         sys.exit(1)
     else:
@@ -143,6 +143,7 @@ def main(
         else:
             print(f"Record deletion successful {cname_record_delete.json()}")
     if update:
+        updated_rdata = ""
         try:
             # Update existing CNAME record
             cname_record_ref = wapi.getone(
@@ -156,11 +157,17 @@ def main(
             updated_rdata = {"ttl": newttl, "name": newname}
         if newcanonical:
             updated_rdata = {"canonical": newcanonical, "ttl": newttl}
-        cname_record = wapi.put(cname_record_ref, json=updated_rdata)
-        if cname_record.status_code != 200:
-            print(f"Record update failed {cname_record.text}")
+        if updated_rdata:
+            try:
+                cname_record = wapi.put(cname_record_ref, json=updated_rdata)
+                if cname_record.status_code != 200:
+                    print(f"Record update failed {cname_record.text}")
+                else:
+                    print(f"Record update successful {cname_record.json()}")
+            except WapiRequestException as err:
+                print(err)
         else:
-            print(f"Record update successful {cname_record.json()}")
+            print("Updated Rdata not provided")
 
     sys.exit()
 

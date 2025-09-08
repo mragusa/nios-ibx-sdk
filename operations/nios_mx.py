@@ -102,7 +102,7 @@ def main(
     password = getpass.getpass(f"Enter password for [{username}]: ")
     try:
         wapi.connect(username=username, password=password)
-    except WapiRequest as err:
+    except WapiRequestException as err:
         log.error(err)
         sys.exit(1)
     else:
@@ -134,33 +134,42 @@ def main(
                 "record:mx",
                 json={"mail_exchanger": exchanger, "name": name, "view": view},
             )
+            try:
+                mx_record_delete = wapi.delete(mx_record_ref)
+                if mx_record_delete.status_code != 200:
+                    print(f"Record deletion failed {mx_record_delete.text}")
+                else:
+                    print(f"Record deletion successful {mx_record_delete.json()}")
+            except WapiRequestException as err:
+                log.error(err)
+                sys.exit(1)
         except WapiRequestException as err:
             log.error(err)
             sys.exit(1)
-            mx_record_delete = wapi.delete(mx_record_ref)
-        if mx_record_delete.status_code != 200:
-            print(f"Record deletion failed {mx_record_delete.text}")
-        else:
-            print(f"Record deletion successful {mx_record_delete.json()}")
     if update:
+        updated_rdata = ""
         try:
             # Update existing MX record
             mx_record_ref = wapi.getone(
                 "record:mx",
                 json={"name": name, "mail_exchanger": exchanger, "view": view},
             )
+            if newname:
+                updated_rdata = {"ttl": newttl, "name": newname}
+            if newexchanger:
+                updated_rdata = {"mail_exchanger": newexchanger, "ttl": newttl}
+            try:
+                mx_record = wapi.put(mx_record_ref, json=updated_rdata)
+                if mx_record.status_code != 200:
+                    print(f"Record update failed {mx_record.text}")
+                else:
+                    print(f"Record update successful {mx_record.json()}")
+            except WapiRequestException as err:
+                log.error(err)
+                sys.exit(1)
         except WapiRequestException as err:
             log.error(err)
             sys.exit(1)
-        if newname:
-            updated_rdata = {"ttl": newttl, "name": newname}
-        if newexchanger:
-            updated_rdata = {"mail_exchanger": newexchanger, "ttl": newttl}
-        mx_record = wapi.put(mx_record_ref, json=updated_rdata)
-        if mx_record.status_code != 200:
-            print(f"Record update failed {mx_record.text}")
-        else:
-            print(f"Record update successful {mx_record.json()}")
 
     sys.exit()
 
