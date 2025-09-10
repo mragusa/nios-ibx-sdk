@@ -46,9 +46,9 @@ current_time = date.today()
 @optgroup.option("-f", "--fqdn", required=True, show_default=True, help="FQDN")
 @optgroup.option("-i", "--ip", required=True, show_default=True, help="IP address")
 @optgroup.group("Operationational Parameters")
-@optgroup.option("--add", is_flag=True, help="Add record")
-@optgroup.option("--delete", is_flag=True, help="Delete record")
-@optgroup.option("--update", is_flag=True, help="Update record")
+@optgroup.option("--add", is_flag=True, default=False, help="Add A record")
+@optgroup.option("--delete", is_flag=True, default=False, help="Delete A record")
+@optgroup.option("--update", is_flag=True, default=False, help="Update A record")
 @optgroup.group("Optional Parameters")
 @optgroup.option(
     "-u",
@@ -106,66 +106,81 @@ def main(
     else:
         log.info("connected to Infoblox grid manager %s", wapi.grid_mgr)
     if add:
-        try:
-            # Add A record to infoblox dns zone
-            a_record = wapi.post(
-                "record:a",
-                json={
-                    "name": fqdn,
-                    "ipv4addr": ip,
-                    "comment": comment,
-                    "disable": disable,
-                    "ttl": ttl,
-                },
-            )
-        except WapiRequestException as err:
-            log.error(err)
-            sys.exit(1)
-        if a_record.status_code != 201:
-            print(f"Record creation failed {a_record.text}")
-        else:
-            print(f"Record creation successful {a_record.json()}")
+        add_arecord(fqdn, ip, comment, disable, ttl)
     if delete:
-        try:
-            # Delete A record from infoblox zone
-            a_record_ref = wapi.getone(
-                "record:a", json={"name": fqdn, "ipv4addr": ip, "view": view}
-            )
-            a_record_delete = wapi.delete(a_record_ref)
-        except WapiRequestException as err:
-            log.error(err)
-            sys.exit(1)
-        if a_record_delete.status_code != 200:
-            print(f"Record deletion failed {a_record_delete.text}")
-        else:
-            print(f"Record deletion successful {a_record_delete.json()}")
+        del_arecord(fqdn, ip, view)
     if update:
-        updated_rdata = ""
-        try:
-            # Update existing A record
-            a_record_ref = wapi.getone(
-                "record:a", json={"name": fqdn, "ipv4addr": ip, "view": view}
-            )
-        except WapiRequestException as err:
-            log.error(err)
-            sys.exit(1)
-        if newip and newttl:
-            updated_rdata = {"ttl": newttl, "ipv4addr": newip}
-        if newname:
-            updated_rdata = {"name": newname}
-        if updated_rdata:
-            try:
-                a_record = wapi.put(a_record_ref, json=updated_rdata)
-                if a_record.status_code != 200:
-                    print(f"Record update failed {a_record.text}")
-                else:
-                    print(f"Record update successful {a_record.json()}")
-            except WapiRequestException as err:
-                print(err)
-        else:
-            print("Updated Rdata not provided")
-
+        update_arecord(fqdn, ip, view, newip, newname, newttl)
     sys.exit()
+
+
+def add_arecord(fqdn, ip, comment, disable, ttl):
+    try:
+        # Add A record to infoblox dns zone
+        a_record = wapi.post(
+            "record:a",
+            json={
+                "name": fqdn,
+                "ipv4addr": ip,
+                "comment": comment,
+                "disable": disable,
+                "ttl": ttl,
+            },
+        )
+    except WapiRequestException as err:
+        log.error(err)
+        sys.exit(1)
+    if a_record.status_code != 201:
+        print(f"Record creation failed: {a_record.status_code} {a_record.text}")
+    else:
+        print(f"Record creation successful {a_record.json()}")
+
+
+def del_arecord(fqdn, ip, view):
+    try:
+        # Delete A record from infoblox zone
+        a_record_ref = wapi.getone(
+            "record:a", json={"name": fqdn, "ipv4addr": ip, "view": view}
+        )
+        a_record_delete = wapi.delete(a_record_ref)
+    except WapiRequestException as err:
+        log.error(err)
+        sys.exit(1)
+    if a_record_delete.status_code != 200:
+        print(
+            f"Record deletion failed: {a_record_delete.status_code} {a_record_delete.text}"
+        )
+    else:
+        print(f"Record deletion successful {a_record_delete.json()}")
+
+
+def update_arecord(fqdn, ip, view, newip, newname, newttl):
+    updated_rdata = ""
+    try:
+        # Update existing A record
+        a_record_ref = wapi.getone(
+            "record:a", json={"name": fqdn, "ipv4addr": ip, "view": view}
+        )
+    except WapiRequestException as err:
+        log.error(err)
+        sys.exit(1)
+    if newip and newttl:
+        updated_rdata = {"ttl": newttl, "ipv4addr": newip}
+    if newname:
+        updated_rdata = {"name": newname}
+    if updated_rdata:
+        try:
+            a_record_update = wapi.put(a_record_ref, json=updated_rdata)
+            if a_record_update.status_code != 200:
+                print(
+                    f"Record update failed: {a_record_update.status_code} {a_record_update.text}"
+                )
+            else:
+                print(f"Record update successful {a_record_update.json()}")
+        except WapiRequestException as err:
+            print(err)
+    else:
+        print("Updated Rdata not provided")
 
 
 if __name__ == "__main__":
