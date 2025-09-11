@@ -48,9 +48,9 @@ current_time = date.today()
 )
 @optgroup.option("-n", "--name", required=True, show_default=True, help="DNS name")
 @optgroup.group("Operationational Parameters")
-@optgroup.option("--add", is_flag=True, help="Add record")
-@optgroup.option("--delete", is_flag=True, help="Delete record")
-@optgroup.option("--update", is_flag=True, help="Update record")
+@optgroup.option("--add", is_flag=True, default=False, help="Add record")
+@optgroup.option("--delete", is_flag=True, default=False, help="Delete record")
+@optgroup.option("--update", is_flag=True, default=False, help="Update record")
 @optgroup.group("Optional Parameters")
 @optgroup.option(
     "-u",
@@ -63,7 +63,7 @@ current_time = date.today()
     "-w", "--wapi-ver", default="2.11", show_default=True, help="Infoblox WAPI version"
 )
 @optgroup.option("-t", "--ttl", default=600, help="TTL in seconds")
-@optgroup.option("-d", "--disable", is_flag=True, help="Disable record")
+@optgroup.option("-d", "--disable", is_flag=True, default=False, help="Disable record")
 @optgroup.option(
     "-c",
     "--comment",
@@ -76,7 +76,9 @@ current_time = date.today()
 @optgroup.option("--newname", help="New IP Address")
 @optgroup.option("--newttl", default=5, help="New TTL")
 @optgroup.group("Logging Parameters")
-@optgroup.option("--debug", is_flag=True, help="enable verbose debug output")
+@optgroup.option(
+    "--debug", is_flag=True, default=False, help="enable verbose debug output"
+)
 def main(
     grid_mgr: str,
     add: bool,
@@ -108,68 +110,96 @@ def main(
     else:
         log.info("connected to Infoblox grid manager %s", wapi.grid_mgr)
     if add:
-        try:
-            # Add CNAME record to infoblox dns zone
-            cname_record = wapi.post(
-                "record:cname",
-                json={
-                    "canonical": canonical,
-                    "name": name,
-                    "comment": comment,
-                    "disable": disable,
-                    "ttl": ttl,
-                },
-            )
-        except WapiRequestException as err:
-            log.error(err)
-            sys.exit(1)
-        if cname_record.status_code != 201:
-            print(f"Record creation failed {cname_record.text}")
-        else:
-            print(f"Record creation successful {cname_record.json()}")
+        add_cname(canonical, name, comment, disable, ttl)
     if delete:
-        try:
-            # Delete CNAME record from infoblox zone
-            cname_record_ref = wapi.getone(
-                "record:cname",
-                json={"canonical": canonical, "name": name, "view": view},
-            )
-            cname_record_delete = wapi.delete(cname_record_ref)
-        except WapiRequestException as err:
-            log.error(err)
-            sys.exit(1)
-        if cname_record_delete.status_code != 200:
-            print(f"Record deletion failed {cname_record_delete.text}")
-        else:
-            print(f"Record deletion successful {cname_record_delete.json()}")
+        delete_cname(canonical, name, view)
     if update:
-        updated_rdata = ""
+        update_cname(canonical, name, view, newttl, newname, newcanonical)
+    sys.exit()
+
+
+def add_cname(canonical, name, comment, disable, ttl):
+    print(f"Adding CNAME {canonical} {name} {comment} Disable: {disable}")
+    log.info(f"Adding CNAME {canonical} {name} {comment} Disable: {disable}")
+    try:
+        # Add CNAME record to infoblox dns zone
+        cname_record = wapi.post(
+            "record:cname",
+            json={
+                "canonical": canonical,
+                "name": name,
+                "comment": comment,
+                "disable": disable,
+                "ttl": ttl,
+            },
+        )
+    except WapiRequestException as err:
+        log.error(err)
+        sys.exit(1)
+    if cname_record.status_code != 201:
+        print(f"Record creation failed {cname_record.text}")
+        log.error(f"Record creation failed {cname_record.text}")
+    else:
+        print(f"Record creation successful {cname_record.json()}")
+        log.info(f"Record creation successful {cname_record.json()}")
+
+
+def delete_cname(canonical, name, view):
+    print(f"Deleting CNAME {canonical} {name} View: {view}")
+    log.info(f"Deleting CNAME {canonical} {name} View: {view}")
+    try:
+        # Delete CNAME record from infoblox zone
+        cname_record_ref = wapi.getone(
+            "record:cname",
+            json={"canonical": canonical, "name": name, "view": view},
+        )
+        cname_record_delete = wapi.delete(cname_record_ref)
+    except WapiRequestException as err:
+        log.error(err)
+        sys.exit(1)
+    if cname_record_delete.status_code != 200:
+        print(
+            f"Record deletion failed {cname_record_delete.status_code} {cname_record_delete.text}"
+        )
+        log.error(
+            f"Record deletion failed {cname_record_delete.status_code} {cname_record_delete.text}"
+        )
+    else:
+        print(f"Record deletion successful {cname_record_delete.json()}")
+        log.info(f"Record deletion successful {cname_record_delete.json()}")
+
+
+def update_cname(canonical, name, view, newttl, newname, newcanonical):
+    print(f"Updating CNAME {canonical} {name} View: {view}")
+    log.info(f"Updating CNAME {canonical} {name} View: {view}")
+    updated_rdata = ""
+    try:
+        # Update existing CNAME record
+        cname_record_ref = wapi.getone(
+            "record:cname",
+            json={"name": name, "canonical": canonical, "view": view},
+        )
+    except WapiRequestException as err:
+        log.error(err)
+        sys.exit(1)
+    if newname:
+        updated_rdata = {"ttl": newttl, "name": newname}
+    if newcanonical:
+        updated_rdata = {"canonical": newcanonical, "ttl": newttl}
+    if updated_rdata:
         try:
-            # Update existing CNAME record
-            cname_record_ref = wapi.getone(
-                "record:cname",
-                json={"name": name, "canonical": canonical, "view": view},
-            )
+            cname_record = wapi.put(cname_record_ref, json=updated_rdata)
+            if cname_record.status_code != 200:
+                print(f"Record update failed {cname_record.text}")
+                log.error(f"Record update failed {cname_record.text}")
+            else:
+                print(f"Record update successful {cname_record.json()}")
+                log.info(f"Record update successful {cname_record.json()}")
         except WapiRequestException as err:
             log.error(err)
             sys.exit(1)
-        if newname:
-            updated_rdata = {"ttl": newttl, "name": newname}
-        if newcanonical:
-            updated_rdata = {"canonical": newcanonical, "ttl": newttl}
-        if updated_rdata:
-            try:
-                cname_record = wapi.put(cname_record_ref, json=updated_rdata)
-                if cname_record.status_code != 200:
-                    print(f"Record update failed {cname_record.text}")
-                else:
-                    print(f"Record update successful {cname_record.json()}")
-            except WapiRequestException as err:
-                print(err)
-        else:
-            print("Updated Rdata not provided")
-
-    sys.exit()
+    else:
+        print("Updated Rdata not provided")
 
 
 if __name__ == "__main__":
