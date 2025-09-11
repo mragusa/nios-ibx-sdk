@@ -115,6 +115,8 @@ def main(
 
 
 def add_arecord(fqdn, ip, comment, disable, ttl):
+    print(f"Creating {fqdn} {ip} {comment} Disabled: {disable}")
+    log.info(f"Creating {fqdn} {ip} {comment} Disabled: {disable}")
     try:
         # Add A record to infoblox dns zone
         a_record = wapi.post(
@@ -132,11 +134,15 @@ def add_arecord(fqdn, ip, comment, disable, ttl):
         sys.exit(1)
     if a_record.status_code != 201:
         print(f"Record creation failed: {a_record.status_code} {a_record.text}")
+        log.error(f"Record creation failed: {a_record.status_code} {a_record.text}")
     else:
         print(f"Record creation successful {a_record.json()}")
+        log.info(f"Record creation successful {a_record.json()}")
 
 
 def del_arecord(fqdn, ip, view):
+    print(f"Deleting {fqdn} {ip} View: {view}")
+    log.info(f"Deleting {fqdn} {ip} View: {view}")
     try:
         # Delete A record from infoblox zone
         a_record_ref = wapi.getone(
@@ -150,11 +156,17 @@ def del_arecord(fqdn, ip, view):
         print(
             f"Record deletion failed: {a_record_delete.status_code} {a_record_delete.text}"
         )
+        log.error(
+            f"Record deletion failed: {a_record_delete.status_code} {a_record_delete.text}"
+        )
     else:
         print(f"Record deletion successful {a_record_delete.json()}")
+        log.info(f"Record deletion successful {a_record_delete.json()}")
 
 
 def update_arecord(fqdn, ip, view, newip, newname, newttl):
+    print(f"Updating {fqdn} {ip} View: {view}")
+    log.info(f"Updating {fqdn} {ip} View: {view}")
     updated_rdata = ""
     try:
         # Update existing A record
@@ -175,12 +187,17 @@ def update_arecord(fqdn, ip, view, newip, newname, newttl):
                 print(
                     f"Record update failed: {a_record_update.status_code} {a_record_update.text}"
                 )
+                log.error(
+                    f"Record update failed: {a_record_update.status_code} {a_record_update.text}"
+                )
             else:
                 print(f"Record update successful {a_record_update.json()}")
+                log.info(f"Record update successful {a_record_update.json()}")
         except WapiRequestException as err:
             print(err)
     else:
         print("Updated Rdata not provided")
+        sys.exit(1)
 
 
 if __name__ == "__main__":
