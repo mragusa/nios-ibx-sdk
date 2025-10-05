@@ -46,7 +46,13 @@ Retreieve grid statistics for the last 30 mins
     "-w", "--wapi-ver", default="2.11", show_default=True, help="Infoblox WAPI version"
 )
 @optgroup.group("Logging Parameters")
-@optgroup.option("--debug", is_flag=True, help="enable verbose debug output")
+@optgroup.option(
+    "--debug",
+    is_flag=True,
+    default=False,
+    show_default=True,
+    help="enable verbose debug output",
+)
 def main(grid_mgr: str, username: str, wapi_ver: str, debug: bool) -> None:
     if debug:
         increase_log_level()
@@ -55,13 +61,13 @@ def main(grid_mgr: str, username: str, wapi_ver: str, debug: bool) -> None:
     password = getpass.getpass(f"Enter password for [{username}]: ")
     try:
         wapi.connect(username=username, password=password)
-    except WapiRequest as err:
+    except WapiRequestException as err:
         log.error(err)
         sys.exit(1)
     else:
         log.info("connected to Infoblox grid manager %s", wapi.grid_mgr)
     try:
-        # Retrieve ADP threat protection statistics 
+        # Retrieve ADP threat protection statistics
         adp_statistics = wapi.get("threatprotection:statistics")
         if adp_statistics.status_code != 200:
             if debug:
