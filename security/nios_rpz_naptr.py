@@ -43,16 +43,41 @@ Admin Documentation: https://docs.infoblox.com/space/nios90/280400764/Infoblox+D
     "-rz", "--rpzone", help="response policy zone in which the record resides"
 )
 @optgroup.option("-n", "--name", help="The name for a record in FQDN format")
-@optgroup.option("-f", "--flags", type=click.Choice(['U', 'S', 'P', 'A'], case_sensitive=True)), help="The flags used to control the interpretation of the fields for a Substitute (NAPTR Record) Rule object. Supported values for the flags field are “U”, “S”, “P” and “A”.")
-@optgroup.option("-o", "--order", type=int, help="The order parameter of the Substitute (NAPTR Record) Rule records. This parameter specifies the order in which the NAPTR rules are applied when multiple rules are present. Valid values are from 0 to 65535 (inclusive), in 32-bit unsigned integer format.")
-@optgroup.option("-p", "--preference", type=int, help="The preference of the Substitute (NAPTR Record) Rule record. The preference field determines the order NAPTR records are processed when multiple records with the same order parameter are present. Valid values are from 0 to 65535 (inclusive), in 32-bit unsigned integer format.")
-@optgroup.option("-r", "--replacement", help="The replacement field of the Substitute (NAPTR Record) Rule object. For nonterminal NAPTR records, this field specifies the next domain name to look up. This value can be in unicode format.")
+@optgroup.option(
+    "-f",
+    "--flags",
+    type=click.Choice(["U", "S", "P", "A"], case_sensitive=True),
+    help="The flags used to control the interpretation of the fields for a Substitute (NAPTR Record) Rule object. Supported values for the flags field are 'U', 'S', 'P' and 'A'.",
+)
+@optgroup.option(
+    "-o",
+    "--order",
+    type=int,
+    help="The order parameter of the Substitute (NAPTR Record) Rule records. This parameter specifies the order in which the NAPTR rules are applied when multiple rules are present. Valid values are from 0 to 65535 (inclusive), in 32-bit unsigned integer format.",
+)
+@optgroup.option(
+    "-p",
+    "--preference",
+    type=int,
+    help="The preference of the Substitute (NAPTR Record) Rule record. The preference field determines the order NAPTR records are processed when multiple records with the same order parameter are present. Valid values are from 0 to 65535 (inclusive), in 32-bit unsigned integer format.",
+)
+@optgroup.option(
+    "-r",
+    "--replacement",
+    help="The replacement field of the Substitute (NAPTR Record) Rule object. For nonterminal NAPTR records, this field specifies the next domain name to look up. This value can be in unicode format.",
+)
 @optgroup.option("-a", "--add", is_flag=True, help="Add RPZ A record")
 @optgroup.option("-u", "--update", is_flag=True, help="Update RPZ A record")
 @optgroup.option("-d", "--delete", is_flag=True, help="Delete RPZ A record")
 @optgroup.group("Optional Parameters")
-@optgroup.options("--services", help="The services field of the Substitute (NAPTR Record) Rule object; maximum 128 characters. The services field contains protocol and service identifiers, such as “http+E2U” or “SIPS+D2T”.")
-@optgroup.options("--regex", help="The regular expression-based rewriting rule of the Substitute (NAPTR Record) Rule record. This should be a POSIX compliant regular expression, including the substitution rule and flags. Refer to RFC 2915 for the field syntax details.")
+@optgroup.option(
+    "--services",
+    help="The services field of the Substitute (NAPTR Record) Rule object; maximum 128 characters. The services field contains protocol and service identifiers, such as “http+E2U” or “SIPS+D2T”.",
+)
+@optgroup.option(
+    "--regex",
+    help="The regular expression-based rewriting rule of the Substitute (NAPTR Record) Rule record. This should be a POSIX compliant regular expression, including the substitution rule and flags. Refer to RFC 2915 for the field syntax details.",
+)
 @optgroup.option("--use_ttl", is_flag=True, help="Use flag for: ttl")
 @optgroup.option(
     "--ttl",
@@ -165,7 +190,9 @@ def main(
             rpz_naptr_record = rpz_naptr.json()
             if update:
                 try:
-                    update_rpz_naptr = wapi.put(rpz_naptr_record["_ref"], json={payload})
+                    update_rpz_naptr = wapi.put(
+                        rpz_naptr_record["_ref"], json={payload}
+                    )
                 except WapiRequestException as err:
                     log.error(err)
                     sys.exit(1)
