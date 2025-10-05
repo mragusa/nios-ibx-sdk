@@ -47,7 +47,13 @@ Basic Infoblox script using IBX-SDK
     help="Infoblox WAPI version",
 )
 @optgroup.group("Logging Parameters")
-@optgroup.option("--debug", is_flag=True, help="enable verbose debug output")
+@optgroup.option(
+    "--debug",
+    is_flag=True,
+    default=False,
+    show_default=True,
+    help="enable verbose debug output",
+)
 def main(grid_mgr: str, username: str, wapi_ver: str, debug: bool) -> None:
     if debug:
         increase_log_level()
@@ -64,13 +70,16 @@ def main(grid_mgr: str, username: str, wapi_ver: str, debug: bool) -> None:
     try:
         # Retrieve network view from Infoblox appliance
         network_view = wapi.get("view")
+        if network_view.status_code != 200:
+            print(network_view.status_code, network_view.text)
+            log.error(network_view.status_code, network_view.text)
+
+        else:
+            print(network_view.json())
+            log.info(network_view.json())
     except WapiRequestException as err:
         log.error(err)
         sys.exit(1)
-    if network_view.status_code != 200:
-        print(network_view.status_code, network_view.text)
-    else:
-        print(network_view.json())
 
     sys.exit()
 
