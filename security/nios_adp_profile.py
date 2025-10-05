@@ -36,14 +36,28 @@ Detailed Information on Infoblox ADP profiles: https://docs.infoblox.com/space/n
 )
 @optgroup.group("Required Parameters")
 @optgroup.option("-g", "--grid-mgr", required=True, help="Infoblox Grid Manager")
-@optgroup.option("-r", "--retrieve", is_flag=True, help="Display existing ADP profile")
+@optgroup.option(
+    "-r",
+    "--retrieve",
+    is_flag=True,
+    default=False,
+    show_default=True,
+    help="Display existing ADP profile",
+)
 @optgroup.option(
     "-c",
     "--create",
     is_flag=True,
     help="Create ADP profile: default name is Internal",
 )
-@optgroup.option("-d", "--delete", is_flag=True, help="Delete ADP profile")
+@optgroup.option(
+    "-d",
+    "--delete",
+    is_flag=True,
+    default=False,
+    show_default=True,
+    help="Delete ADP profile",
+)
 @optgroup.group("Optional Parameters")
 @optgroup.option(
     "-n",
@@ -72,7 +86,13 @@ Detailed Information on Infoblox ADP profiles: https://docs.infoblox.com/space/n
     "-w", "--wapi-ver", default="2.11", show_default=True, help="Infoblox WAPI version"
 )
 @optgroup.group("Logging Parameters")
-@optgroup.option("--debug", is_flag=True, help="enable verbose debug output")
+@optgroup.option(
+    "--debug",
+    is_flag=True,
+    default=False,
+    show_default=True,
+    help="enable verbose debug output",
+)
 def main(
     grid_mgr: str,
     username: str,
@@ -150,9 +170,7 @@ def main(
                                 "name": profilename,
                                 "members": [members],
                                 "use_current_ruleset": True,
-                                "current_ruleset": active_ruleset[0][
-                                    "current_ruleset"
-                                ],
+                                "current_ruleset": active_ruleset[0]["current_ruleset"],
                                 "comment": comment,
                             },
                         )
@@ -166,9 +184,7 @@ def main(
                             json={
                                 "name": profilename,
                                 "use_current_ruleset": True,
-                                "current_ruleset": active_ruleset[0][
-                                    "current_ruleset"
-                                ],
+                                "current_ruleset": active_ruleset[0]["current_ruleset"],
                                 "comment": comment,
                             },
                         )
@@ -176,15 +192,13 @@ def main(
                         log.error(err)
                         sys.exit(1)
                 if new_adp_profile.status_code != 201:
-                    log.error(
-                        "adp profile creation failed: %s", new_adp_profile.text
-                    )
+                    log.error("adp profile creation failed: %s", new_adp_profile.text)
                 else:
                     adp_profile = new_adp_profile.json()
                     log.info("adp profile created: %s %s", profilename, adp_profile)
             else:
-               info.error("profilename not defined")
-               sys.exit(1)
+                info.error("profilename not defined")
+                sys.exit(1)
     if delete:
         if profilename:
             try:
@@ -202,9 +216,7 @@ def main(
                 adp_profile_removal = adp_profile.json()
                 del_adp_profile = wapi.delete(adp_profile_removal[0]["_ref"])
                 if del_adp_profile.status_code != 200:
-                    log.error(
-                        "adp profile removal failed: %s", del_adp_profile.text
-                    )
+                    log.error("adp profile removal failed: %s", del_adp_profile.text)
                 else:
                     log.info("adp profile removed: %s", del_adp_profile.json())
         else:
