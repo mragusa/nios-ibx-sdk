@@ -22,6 +22,7 @@ wapi = Gift()
 
 help_text = """
 Basic Infoblox script using IBX-SDK
+Example: Retrieve DNS view from grid
 """
 
 
@@ -68,15 +69,21 @@ def main(grid_mgr: str, username: str, wapi_ver: str, debug: bool) -> None:
     else:
         log.info("Connected to Infoblox grid manager %s", wapi.grid_mgr)
     try:
-        # Retrieve network view from Infoblox appliance
-        network_view = wapi.get("view")
-        if network_view.status_code != 200:
-            print(network_view.status_code, network_view.text)
-            log.error(network_view.status_code, network_view.text)
+        # Retrieve dns view from Infoblox appliance
+        dns_view = wapi.get(
+            "view",
+            params={
+                "_max_results": 1000,
+                "_return_fields": ["name", "comment", "recursion"],
+            },
+        )
+        if dns_view.status_code != 200:
+            print(dns_view.status_code, dns_view.text)
+            log.error(dns_view.status_code, dns_view.text)
 
         else:
-            print(network_view.json())
-            log.info(network_view.json())
+            print(dns_view.json())
+            log.info(dns_view.json())
     except WapiRequestException as err:
         log.error(err)
         sys.exit(1)
