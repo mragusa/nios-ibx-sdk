@@ -8,6 +8,9 @@ from click_option_group import optgroup
 from ibx_sdk.logger.ibx_logger import init_logger, increase_log_level
 from ibx_sdk.nios.exceptions import WapiRequestException
 from ibx_sdk.nios.gift import Gift
+from rich.console import Console
+from rich.table import Column, Table
+from rich import box
 
 log = init_logger(
     logfile_name="wapi.log",
@@ -21,8 +24,7 @@ log = init_logger(
 wapi = Gift()
 
 help_text = """
-Basic Infoblox script using IBX-SDK
-Example: Retrieve DNS view from grid
+Basic Infoblox script using to retrieve DNS views from Infoblox grid
 """
 
 
@@ -67,7 +69,9 @@ def main(grid_mgr: str, username: str, wapi_ver: str, debug: bool) -> None:
         log.error(err)
         sys.exit(1)
     else:
-        log.info("Connected to Infoblox grid manager %s", wapi.grid_mgr)
+        if debug:
+            log.info("Connected to Infoblox grid manager %s", wapi.grid_mgr)
+        print("Connected to Infoblox grid manager %s", wapi.grid_mgr)
     try:
         # Retrieve dns view from Infoblox appliance
         dns_view = wapi.get(
@@ -78,12 +82,30 @@ def main(grid_mgr: str, username: str, wapi_ver: str, debug: bool) -> None:
             },
         )
         if dns_view.status_code != 200:
-            print(dns_view.status_code, dns_view.text)
+            if debug:
+                print(dns_view.status_code, dns_view.text)
             log.error(dns_view.status_code, dns_view.text)
-
         else:
-            print(dns_view.json())
-            log.info(dns_view.json())
+            if debug:
+                log.info(dns_view.json())
+            view = dns_view.json()
+            table = Table(
+                Column(header="Reference", justify="center"),
+                Column(header="Name", justify="center"),
+                Column(header="Recursion", justify="center"),
+                title=f"Infoblox Grid: {grid_mgr} DNS Views",
+                box=box.SIMPLE,
+            )
+            for v in view:
+                recursion = ""
+                if v["recursion"]:
+                    recursion = "[green]True"
+                else:
+                    recursion = "[red]False"
+                table.add_row(v["_ref"], v["name"], recursion)
+            console = Console()
+            console.print(table)
+
     except WapiRequestException as err:
         log.error(err)
         sys.exit(1)
