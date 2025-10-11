@@ -72,6 +72,12 @@ def main(grid_mgr: str, username: str, wapi_ver: str, debug: bool) -> None:
         if debug:
             log.info("Connected to Infoblox grid manager %s", wapi.grid_mgr)
         print("Connected to Infoblox grid manager %s", wapi.grid_mgr)
+    views = get_view(debug)
+    report_view(grid_mgr, views)
+    sys.exit()
+
+
+def get_view(debug):
     try:
         # Retrieve dns view from Infoblox appliance
         dns_view = wapi.get(
@@ -88,29 +94,29 @@ def main(grid_mgr: str, username: str, wapi_ver: str, debug: bool) -> None:
         else:
             if debug:
                 log.info(dns_view.json())
-            view = dns_view.json()
-            table = Table(
-                Column(header="Reference", justify="center"),
-                Column(header="Name", justify="center"),
-                Column(header="Recursion", justify="center"),
-                title=f"Infoblox Grid: {grid_mgr} DNS Views",
-                box=box.SIMPLE,
-            )
-            for v in view:
-                recursion = ""
-                if v["recursion"]:
-                    recursion = "[green]True"
-                else:
-                    recursion = "[red]False"
-                table.add_row(v["_ref"], v["name"], recursion)
-            console = Console()
-            console.print(table)
-
+            return dns_view.json()
     except WapiRequestException as err:
         log.error(err)
         sys.exit(1)
 
-    sys.exit()
+
+def report_view(grid_mgr, view):
+    table = Table(
+        Column(header="Reference", justify="center"),
+        Column(header="Name", justify="center"),
+        Column(header="Recursion", justify="center"),
+        title=f"Infoblox Grid: {grid_mgr} DNS Views",
+        box=box.SIMPLE,
+    )
+    for v in view:
+        recursion = ""
+        if v["recursion"]:
+            recursion = "[green]True"
+        else:
+            recursion = "[red]False"
+        table.add_row(v["_ref"], v["name"], recursion)
+    console = Console()
+    console.print(table)
 
 
 if __name__ == "__main__":
