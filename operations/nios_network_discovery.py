@@ -91,7 +91,7 @@ def main(grid_mgr: str, username: str, wapi_ver: str, debug: bool, type: str) ->
     else:
         if debug:
             log.info("Connected to Infoblox grid manager %s", wapi.grid_mgr)
-        print("Connected to Infoblox grid manager %s", wapi.grid_mgr)
+        print(f"Connected to Infoblox grid manager {wapi.grid_mgr}")
     networks = get_network(discovery_results[type], debug)
     report_network(grid_mgr, networks, type)
     sys.exit()
@@ -103,7 +103,7 @@ def get_network(type: list, debug):
         ibx_networks = wapi.get(
             "network",
             params={
-                "_max_results": 1000,
+                "_max_results": 100000,
                 "_return_fields": type,
             },
         )
