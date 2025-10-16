@@ -125,6 +125,7 @@ def report_network(grid_mgr: str, network, type: str):
     enDiscovery = ""
     enFlagDiscovery = ""
     disMember = ""
+    discoverStatus = ""
     table = Table(
         Column(header="Reference", justify="center"),
         Column(header="Network", justify="center"),
@@ -157,6 +158,17 @@ def report_network(grid_mgr: str, network, type: str):
                 disMember = n["discovery_member"]
             else:
                 disMember = "[red]None"
+        if "discover_now_status" in n:
+            if n["discover_now_status"] == "COMPLETE":
+                discoverStatus = f"[green] {n["discover_now_status"]}"
+            elif n["discover_now_status"] == "FAILED":
+                discoverStatus = f"[red] {n["discover_now_status"]}"
+            elif n["discover_now_status"] == "PENDING":
+                discoverStatus = f"[yellow] {n["discover_now_status"]}"
+            elif n["discover_now_status"] == "RUNNING":
+                discoverStatus = f"[light blue] {n["discover_now_status"]}"
+            else:
+                discoverStatus = n["discover_now_status"]
         if type == "report":
             table.add_row(
                 n["_ref"],
@@ -167,7 +179,7 @@ def report_network(grid_mgr: str, network, type: str):
                 n["discovery_engine_type"],
             )
         if type == "scan_status":
-            table.add_row(n["_ref"], n["network"], n["discover_now_status"])
+            table.add_row(n["_ref"], n["network"], discoverStatus)
     console = Console()
     console.print(table)
 
