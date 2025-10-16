@@ -124,6 +124,7 @@ def get_network(type: list, debug):
 def report_network(grid_mgr: str, network, type: str):
     enDiscovery = ""
     enFlagDiscovery = ""
+    disMember = ""
     table = Table(
         Column(header="Reference", justify="center"),
         Column(header="Network", justify="center"),
@@ -138,26 +139,31 @@ def report_network(grid_mgr: str, network, type: str):
     if type == "scan_status":
         table.add_column("Discovery Status", justify="center")
     for n in network:
-        match (n["enable_discovery"], n["use_enable_discovery"]):
-            case (True, True):
-                enDiscovery = "[green]True"
-                enFlagDiscovery = "[green]True"
-            case (True, False):
-                enDiscovery = "[green]True"
-                enFlagDiscovery = "[red]False"
-            case (False, True):
-                enDiscovery = "[red]False"
-                enFlagDiscovery = "[green]True"
-            case (False, False):
-                enDiscovery = "[red]False"
-                enFlagDiscovery = "[red]False"
+        if "enable_discovery" in n:
+            match (n["enable_discovery"], n["use_enable_discovery"]):
+                case (True, True):
+                    enDiscovery = "[green]True"
+                    enFlagDiscovery = "[green]True"
+                case (True, False):
+                    enDiscovery = "[green]True"
+                    enFlagDiscovery = "[red]False"
+                case (False, True):
+                    enDiscovery = "[red]False"
+                    enFlagDiscovery = "[green]True"
+                case (False, False):
+                    enDiscovery = "[red]False"
+                    enFlagDiscovery = "[red]False"
+            if "discovery_member" in n:
+                disMember = n["discovery_member"]
+            else:
+                disMember = "[red]None"
         if type == "report":
             table.add_row(
                 n["_ref"],
                 n["network"],
                 enDiscovery,
                 enFlagDiscovery,
-                n["discovery_member"],
+                disMember,
                 n["discovery_engine_type"],
             )
         if type == "scan_status":
