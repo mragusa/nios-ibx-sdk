@@ -128,15 +128,33 @@ def report_network(grid_mgr: str, network, type: str):
     )
     if type == "report":
         table.add_column("Discovery Enabled", justify="center")
+        table.add_column("Discovery Use Flag", justify="center")
+        table.add_column("Discovery Member", justify="center")
+        table.add_column("Discovery Engine", justify="center")
     if type == "scan_status":
         table.add_column("Discovery Status", justify="center")
     for n in network:
-        if n["enable_discovery"]:
+        if n["enable_discovery"] and n["use_enable_discovery"]:
             enDiscovery = "[green]True"
+            enFlagDiscovery = "[green]True"
+        elif n["enable_discovery"] and (n["use_enable_discovery"] is False):
+            enDiscovery = "[green]True"
+            enFlagDiscovery = "[red]False"
+        elif n["use_enable_discovery"] and (n["enable_discovery"] is False):
+            enDiscovery = "[red]False"
+            enFlagDiscovery = "[green]True"
         else:
             enDiscovery = "[red]False"
+            enFlagDiscovery = "[red]False"
         if type == "report":
-            table.add_row(n["_ref"], n["network"], enDiscovery)
+            table.add_row(
+                n["_ref"],
+                n["network"],
+                enDiscovery,
+                enFlagDiscovery,
+                n["discovery_member"],
+                n["discovery_engine_type"],
+            )
         if type == "scan_status":
             table.add_row(n["_ref"], n["network"], n["discover_now_status"])
     console = Console()
