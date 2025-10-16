@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-
+# TODO
+# Add ability to check network containers
 
 import getpass
 import sys
@@ -120,6 +121,8 @@ def get_network(type: list, debug):
 
 
 def report_network(grid_mgr: str, network, type: str):
+    enDiscovery = ""
+    enFlagDiscovery = ""
     table = Table(
         Column(header="Reference", justify="center"),
         Column(header="Network", justify="center"),
@@ -134,18 +137,19 @@ def report_network(grid_mgr: str, network, type: str):
     if type == "scan_status":
         table.add_column("Discovery Status", justify="center")
     for n in network:
-        if n["enable_discovery"] and n["use_enable_discovery"]:
-            enDiscovery = "[green]True"
-            enFlagDiscovery = "[green]True"
-        elif n["enable_discovery"] and (n["use_enable_discovery"] is False):
-            enDiscovery = "[green]True"
-            enFlagDiscovery = "[red]False"
-        elif n["use_enable_discovery"] and (n["enable_discovery"] is False):
-            enDiscovery = "[red]False"
-            enFlagDiscovery = "[green]True"
-        else:
-            enDiscovery = "[red]False"
-            enFlagDiscovery = "[red]False"
+        match (n["enable_discovery"], n["use_enable_discovery"]):
+            case (True, True):
+                enDiscovery = "[green]True"
+                enFlagDiscovery = "[green]True"
+            case (True, False):
+                enDiscovery = "[green]True"
+                enFlagDiscovery = "[red]False"
+            case (False, True):
+                enDiscovery = "[red]False"
+                enFlagDiscovery = "[green]True"
+            case (False, False):
+                enDiscovery = "[red]False"
+                enFlagDiscovery = "[red]False"
         if type == "report":
             table.add_row(
                 n["_ref"],
