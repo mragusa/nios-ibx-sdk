@@ -82,6 +82,7 @@ def main(grid_mgr: str, username: str, wapi_ver: str, debug: bool, type: str) ->
         increase_log_level()
     wapi.grid_mgr = grid_mgr
     wapi.wapi_ver = wapi_ver
+    wapi.timeout = 600
     password = getpass.getpass(f"Enter password for [{username}]: ")
     try:
         wapi.connect(username=username, password=password)
