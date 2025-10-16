@@ -62,6 +62,7 @@ def main(grid_mgr: str, username: str, wapi_ver: str, debug: bool) -> None:
         increase_log_level()
     wapi.grid_mgr = grid_mgr
     wapi.wapi_ver = wapi_ver
+    wapi.timeout = 600
     password = getpass.getpass(f"Enter password for [{username}]: ")
     try:
         wapi.connect(username=username, password=password)
@@ -83,7 +84,7 @@ def get_view(debug):
         dns_view = wapi.get(
             "view",
             params={
-                "_max_results": 1000,
+                "_max_results": 5000,
                 "_return_fields": ["name", "comment", "recursion"],
             },
         )
