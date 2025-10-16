@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # TODO
 # Add ability to check network containers
+# Add ability to see counts of enabled or disabled
 
 import getpass
 import sys
@@ -95,7 +96,32 @@ def main(grid_mgr: str, username: str, wapi_ver: str, debug: bool, type: str) ->
         print(f"Connected to Infoblox grid manager {wapi.grid_mgr}")
     networks = get_network(discovery_results[type], debug)
     report_network(grid_mgr, networks, type)
+    network_container = get_network_container(discovery_results[type], debug)
+    report_network(grid_mgr, network_container, type)
     sys.exit()
+
+
+def get_network_container(type: list, debug):
+    try:
+        # Retrieve dns view from Infoblox appliance
+        ibx_networks = wapi.get(
+            "networkcontainer",
+            params={
+                "_max_results": 100000,
+                "_return_fields": type,
+            },
+        )
+        if ibx_networks.status_code != 200:
+            if debug:
+                print(ibx_networks.status_code, ibx_networks.text)
+            log.error(ibx_networks.status_code, ibx_networks.text)
+        else:
+            if debug:
+                log.info(ibx_networks.json())
+            return ibx_networks.json()
+    except WapiRequestException as err:
+        log.error(err)
+        sys.exit(1)
 
 
 def get_network(type: list, debug):
