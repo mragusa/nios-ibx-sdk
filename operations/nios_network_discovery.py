@@ -78,6 +78,33 @@ def main(grid_mgr: str, username: str, wapi_ver: str, debug: bool, type: str) ->
             "discovery_engine_type",
         ],
         "scan_status": ["network", "comment", "discover_now_status"],
+        "global": [
+            "advanced_polling_settings",
+            "advanced_sdn_polling_settings",
+            "advisor_settings",
+            "auto_conversion_settings",
+            "basic_polling_settings",
+            "basic_sdn_polling_settings",
+            "cli_credentials",
+            "device_hints",
+            "discovery_blackout_setting",
+            "dns_lookup_option",
+            "dns_lookup_throttle",
+            "enable_advisor",
+            "enable_auto_conversion",
+            "enable_auto_updates",
+            "grid_name",
+            "ignore_conflict_duration",
+            "port_control_blackout_setting",
+            "ports",
+            "same_port_control_discovery_blackout",
+            "snmpv1v2_credentials",
+            "snmpv3_credentials",
+            "unmanaged_ips_limit",
+            "unmanaged_ips_timeout",
+            "vrf_mapping_policy",
+            "vrf_mapping_rules",
+        ],
     }
     if debug:
         increase_log_level()
@@ -94,11 +121,35 @@ def main(grid_mgr: str, username: str, wapi_ver: str, debug: bool, type: str) ->
         if debug:
             log.info("Connected to Infoblox grid manager %s", wapi.grid_mgr)
         print(f"Connected to Infoblox grid manager {wapi.grid_mgr}")
-    network_container = get_network_container(discovery_results[type], debug)
-    report_network(grid_mgr, network_container, type, "Network Containers")
-    networks = get_network(discovery_results[type], debug)
-    report_network(grid_mgr, networks, type, "Networks")
+    if type == "report" or type == "scan_status":
+        network_container = get_network_container(discovery_results[type], debug)
+        report_network(grid_mgr, network_container, type, "Network Containers")
+        networks = get_network(discovery_results[type], debug)
+        report_network(grid_mgr, networks, type, "Networks")
+    elif type == "global":
+        nd_global_config = get_nd_global(discovery_results[type], debug)
+        print(nd_global_config)
+    else:
+        print("Option unknown")
     sys.exit()
+
+
+def get_nd_global(type: list, debug):
+    try:
+        nd_global = wapi.get(
+            "discovery:gridproperties", params={"_return_fields": type}
+        )
+        if nd_global.status_code != 200:
+            if debug:
+                print(nd_global.status_code, nd_global.text)
+            log.error(nd_global.status_code, nd_global.text)
+        else:
+            if debug:
+                log.info(nd_global.json())
+            return nd_global.json()
+    except WapiRequestException as err:
+        log.error(err)
+        sys.exit(1)
 
 
 def get_network_container(type: list, debug):
