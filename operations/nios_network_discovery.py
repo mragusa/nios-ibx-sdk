@@ -94,16 +94,15 @@ def main(grid_mgr: str, username: str, wapi_ver: str, debug: bool, type: str) ->
         if debug:
             log.info("Connected to Infoblox grid manager %s", wapi.grid_mgr)
         print(f"Connected to Infoblox grid manager {wapi.grid_mgr}")
-    networks = get_network(discovery_results[type], debug)
-    report_network(grid_mgr, networks, type)
     network_container = get_network_container(discovery_results[type], debug)
-    report_network(grid_mgr, network_container, type)
+    report_network(grid_mgr, network_container, type, "Network Containers")
+    networks = get_network(discovery_results[type], debug)
+    report_network(grid_mgr, networks, type, "Networks")
     sys.exit()
 
 
 def get_network_container(type: list, debug):
     try:
-        # Retrieve dns view from Infoblox appliance
         ibx_networks = wapi.get(
             "networkcontainer",
             params={
@@ -126,7 +125,6 @@ def get_network_container(type: list, debug):
 
 def get_network(type: list, debug):
     try:
-        # Retrieve dns view from Infoblox appliance
         ibx_networks = wapi.get(
             "network",
             params={
@@ -147,7 +145,7 @@ def get_network(type: list, debug):
         sys.exit(1)
 
 
-def report_network(grid_mgr: str, network, type: str):
+def report_network(grid_mgr: str, network, type: str, object_type: str):
     enDiscovery = ""
     enFlagDiscovery = ""
     disMember = ""
@@ -155,7 +153,7 @@ def report_network(grid_mgr: str, network, type: str):
     table = Table(
         Column(header="Reference", justify="center"),
         Column(header="Network", justify="center"),
-        title=f"Infoblox Grid: {grid_mgr} Network Discovery {type}",
+        title=f"Infoblox Grid: {grid_mgr} Network Discovery {type} : {object_type}",
         box=box.SIMPLE,
     )
     if type == "report":
