@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+"""
+TODO: Enable CPU snmp queries
+"""
 
 
 import getpass
@@ -63,7 +66,7 @@ def main(
     password = getpass.getpass(f"Enter password for [{username}]: ")
     try:
         wapi.connect(username=username, password=password)
-    except WapiRequest as err:
+    except WapiRequestException as err:
         log.error(err)
         sys.exit(1)
     else:
@@ -119,6 +122,10 @@ def main(
 
     print("Checking Grid Members")
     members(wapi)
+    print("Retreiving IPAM Statistics")
+    ipam_stats(wapi)
+    print("Retreiving Capacity Report")
+    capacityreport(wapi, debug)
 
     print("Testing API Functionality")
     with Progress() as progress:
@@ -136,16 +143,16 @@ def main(
                     progress.update(create_results, advance=1)
                 else:
                     progress.update(failure_results, advance=1)
-        record_references = record_references[:-4]
-        delete_results = progress.add_task(
-            "[blue]Record Delete API:", total=len(record_references)
-        )
-        for ref in record_references:
-            result2 = delete_record(wapi, ref)
-            if result2 == "success":
-                progress.update(delete_results, advance=1)
-            else:
-                progress.update(failure_results, advance=1)
+            record_references = record_references[:-4]
+            delete_results = progress.add_task(
+                "[blue]Record Delete API:", total=len(record_references)
+            )
+            for ref in record_references:
+                result2 = delete_record(wapi, ref)
+                if result2 == "success":
+                    progress.update(delete_results, advance=1)
+                else:
+                    progress.update(failure_results, advance=1)
 
     sys.exit()
 
@@ -154,25 +161,25 @@ def main(
 def add_record(wapi, record_type, data):
     try:
         response = wapi.post(record_type, json=data)
+        # Post requests return 201 status if successful: https://ipam.illinois.edu/wapidoc/index.html?highlight=response%20code#post
+        if response.status_code != 201:
+            return "fail"
+        else:
+            record_ref = response.json()
+            return ("success", record_ref)
     except WapiRequestException as err:
         log.error(err)
-        # Post requests return 201 status if successful: https://ipam.illinois.edu/wapidoc/index.html?highlight=response%20code#post
-    if response.status_code != 201:
-        return "fail"
-    else:
-        record_ref = response.json()
-        return ("success", record_ref)
 
 
 def delete_record(wapi, ref):
     try:
         response = wapi.delete(ref)
+        if response.status_code != 200:
+            return "fail"
+        else:
+            return "success"
     except WapiRequestException as err:
         log.error(err)
-    if response.status_code != 200:
-        return "fail"
-    else:
-        return "success"
 
 
 def members(wapi):
@@ -233,6 +240,78 @@ def members(wapi):
 
     console = Console()
     console.print(table)
+
+
+def ipam_stats(wapi):
+    statistics = wapi.get(
+        "ipam:statistics",
+        params={"_return_fields": ["network", "cidr", "network_view", "utilization"]},
+    )
+    if statistics.status_code != 200:
+        print(statistics.statis_code, statistics.text)
+    else:
+        table = Table(title="IPAM Statistics")
+        table.add_column("Network", justify="center", style="green3")
+        table.add_column("CIDR", justify="center", style="bright_white")
+        table.add_column("Network View", justify="center", style="green3")
+        table.add_column("Utilization", justify="center", style="bright_white")
+        stats = statistics.json()
+        for s in stats:
+            table.add_row(
+                s["network"],
+                str(s["cidr"]),
+                s["network_view"],
+                str(float(s["utilization"] / 10)),
+            )
+        console = Console()
+        console.print(table)
+
+
+def capacityreport(wapi, debug):
+    members = wapi.get("member", params={"_return_fields": ["host_name"]})
+    if members.status_code != 200:
+        print(members.status_code, members.text)
+    else:
+        print("Grid Members Found")
+        grd_members = members.json()
+        for grdmems in grd_members:
+            # print(grdmems["host_name"])
+            cap_report = wapi.get(
+                "capacityreport",
+                params={
+                    "name": grdmems["host_name"],
+                    "_return_fields": [
+                        "name",
+                        "hardware_type",
+                        "max_capacity",
+                        "object_counts",
+                        "percent_used",
+                        "role",
+                        "total_objects",
+                    ],
+                },
+            )
+            if cap_report.status_code != 200:
+                print(cap_report.status_code, cap_report.text)
+            else:
+                if debug:
+                    print(cap_report.json())
+                report = cap_report.json()
+                for r in report:
+                    table = Table(
+                        title=f"{r["name"]} {r["role"]} Capacity Report: {r["hardware_type"]}",
+                        highlight=True,
+                        caption="Total Capacity: " + str(r["max_capacity"]),
+                    )
+                    table.add_column("Type", justify="center")
+                    table.add_column("Count", justify="center")
+                    for x in r["object_counts"]:
+                        table.add_row(x["type_name"], str(x["count"]))
+                    table.add_row("Percent Used", str(r["percent_used"]))
+                    table.add_row("Total Objects", str(r["total_objects"]))
+                    console = Console()
+                    console.print(table)
+                    print()
 
 
 if __name__ == "__main__":
