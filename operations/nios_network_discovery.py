@@ -268,21 +268,21 @@ def report_config(grid_mgr: str, config, type: str, object_type: str):
                 c["advanced_polling_settings"],
                 c["advanced_sdn_polling_settings"],
                 c["cli_credentials"],
-                c["snmpv1v2_credentials"],
-                c["snmpv3_credentials"],
-                c["ports"],
+                str(c["snmpv1v2_credentials"]),
+                str(c["snmpv3_credentials"]),
+                str(c["ports"]),
             )
         if type == "member":
             table.add_row(
                 c["address"],
-                c["default_seed_routers"],
-                c["seed_routers"],
+                str(c["default_seed_routers"]),
+                str(c["seed_routers"]),
                 c["discovery_member"],
-                c["scan_interfaces"],
-                c["snmpv1v2_credentials"],
-                c["snmpv3_credentials"],
-                c["use_snmpv1v2_credentials"],
-                c["use_snmpv3_credentials"],
+                str(c["scan_interfaces"]),
+                str(c["snmpv1v2_credentials"]),
+                str(c["snmpv3_credentials"]),
+                str(c["use_snmpv1v2_credentials"]),
+                str(c["use_snmpv3_credentials"]),
             )
     console = Console()
     console.print(table)
