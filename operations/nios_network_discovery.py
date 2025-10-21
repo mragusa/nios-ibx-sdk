@@ -264,10 +264,10 @@ def report_config(grid_mgr: str, config, type: str, object_type: str):
         if type == "global":
             table.add_row(
                 c["grid_name"],
-                c["basic_polling_settings"],
-                c["advanced_polling_settings"],
-                c["advanced_sdn_polling_settings"],
-                c["cli_credentials"],
+                str(c["basic_polling_settings"]),
+                str(c["advanced_polling_settings"]),
+                str(c["advanced_sdn_polling_settings"]),
+                str(c["cli_credentials"]),
                 str(c["snmpv1v2_credentials"]),
                 str(c["snmpv3_credentials"]),
                 str(c["ports"]),
