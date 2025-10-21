@@ -146,10 +146,11 @@ def main(grid_mgr: str, username: str, wapi_ver: str, debug: bool, type: str) ->
         report_network(grid_mgr, networks, type, "Networks")
     elif type == "global":
         nd_global_config = get_nd_global(discovery_results[type], debug)
-        print(nd_global_config)
+        report_config(grid_mgr, nd_global_config, type, "Global")
     elif type == "member":
         nd_member_config = get_nd_member(discovery_results[type], debug)
-        print(nd_member_config)
+        report_config(grid_mgr, nd_member_config, type, "Member")
+
     else:
         print("Option unknown")
     sys.exit()
