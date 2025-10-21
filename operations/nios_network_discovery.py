@@ -87,7 +87,6 @@ def main(grid_mgr: str, username: str, wapi_ver: str, debug: bool, type: str) ->
             "basic_polling_settings",
             "basic_sdn_polling_settings",
             "cli_credentials",
-            "device_hints",
             "discovery_blackout_setting",
             "dns_lookup_option",
             "dns_lookup_throttle",
@@ -234,6 +233,58 @@ def get_network(type: list, debug):
     except WapiRequestException as err:
         log.error(err)
         sys.exit(1)
+
+
+def report_config(grid_mgr: str, config, type: str, object_type: str):
+    table = Table(
+        title=f"Infoblox Grid: {grid_mgr} {type} {object_type} Configuration",
+        box=box.SIMPLE,
+    )
+    if type == "global":
+        table.add_column("Grid")
+        table.add_column("Basic Polling Settings")
+        table.add_column("Advanced Polling Settings")
+        table.add_column("Advanced SDN Polling Settings")
+        table.add_column("CLI Credentials")
+        table.add_column("SNMP v1/v2 Credentials")
+        table.add_column("SNMP v3 Credentials")
+        table.add_column("Ports")
+    if type == "member":
+        table.add_column("Address")
+        table.add_column("Default Seed Routers")
+        table.add_column("Seed Routers")
+        table.add_column("Discovery Member")
+        table.add_column("Scan Interfaces")
+        table.add_column("SNMP v1/v2 Credentials")
+        table.add_column("SNMP v3 Credentials")
+        table.add_column("Use SNMP v1/v2")
+        table.add_column("Use SNMP v3")
+    for c in config:
+        if type == "global":
+            table.add_row(
+                c["grid_name"],
+                c["basic_polling_settings"],
+                c["advanced_polling_settings"],
+                c["advanced_sdn_polling_settings"],
+                c["cli_credentials"],
+                c["snmpv1v2_credentials"],
+                c["snmpv3_credentials"],
+                c["ports"],
+            )
+        if type == "member":
+            table.add_row(
+                c["address"],
+                c["default_seed_routers"],
+                c["seed_routers"],
+                c["discovery_member"],
+                c["scan_interfaces"],
+                c["snmpv1v2_credentials"],
+                c["snmpv3_credentials"],
+                c["use_snmpv1v2_credentials"],
+                c["use_snmpv3_credentials"],
+            )
+    console = Console()
+    console.print(table)
 
 
 def report_network(grid_mgr: str, network, type: str, object_type: str):
