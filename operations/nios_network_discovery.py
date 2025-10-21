@@ -39,7 +39,8 @@ Display Network Discovery configuration for an Infoblox grid
 @optgroup.option(
     "-t",
     "--type",
-    type=click.Choice(["report", "scan_status"]),
+    type=click.Choice(["report", "scan_status", "global", "member"]),
+    required=True,
     default="report",
     show_default=True,
     help="Reporting Type",
@@ -105,6 +106,24 @@ def main(grid_mgr: str, username: str, wapi_ver: str, debug: bool, type: str) ->
             "vrf_mapping_policy",
             "vrf_mapping_rules",
         ],
+        "member": [
+            "address",
+            "cli_credentials",
+            "default_seed_routers",
+            "discovery_member",
+            "enable_service",
+            "gateway_seed_routers",
+            "is_sa",
+            "role",
+            "scan_interfaces",
+            "sdn_configs",
+            "seed_routers",
+            "snmpv1v2_credentials",
+            "snmpv3_credentials",
+            "use_cli_credentials",
+            "use_snmpv1v2_credentials",
+            "use_snmpv3_credentials",
+        ],
     }
     if debug:
         increase_log_level()
@@ -129,9 +148,30 @@ def main(grid_mgr: str, username: str, wapi_ver: str, debug: bool, type: str) ->
     elif type == "global":
         nd_global_config = get_nd_global(discovery_results[type], debug)
         print(nd_global_config)
+    elif type == "member":
+        nd_member_config = get_nd_member(discovery_results[type], debug)
+        print(nd_member_config)
     else:
         print("Option unknown")
     sys.exit()
+
+
+def get_nd_member(type: list, debug):
+    try:
+        nd_member = wapi.get(
+            "discovery:memberproperties", params={"_return_fields": type}
+        )
+        if nd_member.status_code != 200:
+            if debug:
+                print(nd_member.status_code, nd_member.text)
+            log.error(nd_member.status_code, nd_member.text)
+        else:
+            if debug:
+                log.info(nd_member.json())
+            return nd_member.json()
+    except WapiRequestException as err:
+        log.error(err)
+        sys.exit(1)
 
 
 def get_nd_global(type: list, debug):
