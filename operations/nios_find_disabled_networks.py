@@ -71,8 +71,8 @@ def main(grid_mgr: str, username: str, wapi_ver: str, debug: bool) -> None:
         sys.exit(1)
     else:
         if debug:
-            log.info("Connected to Infoblox grid manager %s", wapi.grid_mgr)
-        print("Connected to Infoblox grid manager %s", wapi.grid_mgr)
+            log.info(f"Connected to Infoblox grid manager {wapi.grid_mgr}")
+        print(f"Connected to Infoblox grid manager {wapi.grid_mgr}")
     networks = get_network(debug)
     report_network(grid_mgr, networks)
     sys.exit()
