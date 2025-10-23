@@ -116,7 +116,9 @@ def report_network(grid_mgr, networks):
             disabled = "[green]True"
         else:
             disabled = "[red]False"
-        table.add_row(n["_ref"], n["name"], n["comment"], disabled, str(n["members"]))
+        table.add_row(
+            n["_ref"], n["network"], n["comment"], disabled, str(n["members"])
+        )
     console = Console()
     console.print(table)
 
