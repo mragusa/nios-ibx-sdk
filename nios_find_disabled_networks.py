@@ -116,7 +116,7 @@ def report_network(grid_mgr, networks):
             disabled = "[green]True"
         else:
             disabled = "[red]False"
-        if n["comment"]:
+        if "comment" in n:
             comment = n["comment"]
         else:
             comment = "None"
