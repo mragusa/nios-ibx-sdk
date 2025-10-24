@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
 # TODO
-# Add ability to check network containers
-# Add ability to see counts of enabled or disabled
 
 import getpass
 import sys
@@ -289,6 +287,8 @@ def report_config(grid_mgr: str, config, type: str, object_type: str):
 
 
 def report_network(grid_mgr: str, network, type: str, object_type: str):
+    network_with_discovery = 0
+    network_without_discovery = 0
     enDiscovery = ""
     enFlagDiscovery = ""
     disMember = ""
@@ -312,15 +312,19 @@ def report_network(grid_mgr: str, network, type: str, object_type: str):
                 case (True, True):
                     enDiscovery = "[green]True"
                     enFlagDiscovery = "[green]True"
+                    network_with_discovery += 1
                 case (True, False):
                     enDiscovery = "[green]True"
                     enFlagDiscovery = "[red]False"
+                    network_with_discovery += 1
                 case (False, True):
                     enDiscovery = "[red]False"
                     enFlagDiscovery = "[green]True"
+                    network_without_discovery += 1
                 case (False, False):
                     enDiscovery = "[red]False"
                     enFlagDiscovery = "[red]False"
+                    network_without_discovery += 1
             if "discovery_member" in n:
                 disMember = n["discovery_member"]
             else:
@@ -348,6 +352,13 @@ def report_network(grid_mgr: str, network, type: str, object_type: str):
         if type == "scan_status":
             table.add_row(n["_ref"], n["network"], discoverStatus)
     console = Console()
+    console.print(table)
+    table = Table(
+        "Networks with Discovery",
+        "Networks Without Discovery",
+        title="Networks with Discovery Summary",
+    )
+    table.add_row(str(network_with_discovery), str(network_without_discovery))
     console.print(table)
 
 
