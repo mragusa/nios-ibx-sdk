@@ -148,7 +148,6 @@ def main(grid_mgr: str, username: str, wapi_ver: str, debug: bool, type: str) ->
     elif type == "member":
         nd_member_config = get_nd_member(discovery_results[type], debug)
         report_config(grid_mgr, nd_member_config, type, "Member")
-
     else:
         print("Option unknown")
     sys.exit()
@@ -360,6 +359,7 @@ def report_network(grid_mgr: str, network, type: str, object_type: str):
     )
     table.add_row(str(network_with_discovery), str(network_without_discovery))
     console.print(table)
+    sys.exit()
 
 
 if __name__ == "__main__":
