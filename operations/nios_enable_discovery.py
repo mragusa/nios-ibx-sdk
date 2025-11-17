@@ -49,6 +49,16 @@ Enable Network Discovery on Infoblox networks and containers
     show_default=True,
     help="Infoblox WAPI version",
 )
+@optgroup.option("--get", is_flag=True, default=False, help="Retrieve NIOS Networks")
+@optgroup.option(
+    "--enable", is_flag=True, default=False, help="Enable ND on NIOS Networks"
+)
+@optgroup.option(
+    "--member",
+    default="infoblox.localdomain",
+    show_default=True,
+    help="Discovery Member",
+)
 @optgroup.group("Logging Parameters")
 @optgroup.option(
     "--debug",
@@ -57,7 +67,15 @@ Enable Network Discovery on Infoblox networks and containers
     show_default=True,
     help="enable verbose debug output",
 )
-def main(grid_mgr: str, username: str, wapi_ver: str, debug: bool) -> None:
+def main(
+    grid_mgr: str,
+    username: str,
+    wapi_ver: str,
+    get: bool,
+    enable: bool,
+    debug: bool,
+    member: str,
+) -> None:
     if debug:
         increase_log_level()
     wapi.grid_mgr = grid_mgr
@@ -73,10 +91,15 @@ def main(grid_mgr: str, username: str, wapi_ver: str, debug: bool) -> None:
         if debug:
             log.info(f"Connected to Infoblox grid manager {wapi.grid_mgr}")
         print(f"Connected to Infoblox grid manager {wapi.grid_mgr}")
-    networks = get_networks(debug)
-    enable_nd_network(networks)
-    networks = get_networks(debug)
-    report_network(grid_mgr, networks)
+    if get:
+        networks = get_networks(debug)
+        report_network(grid_mgr, networks)
+    if enable:
+        # TODO clean up uptime querying
+        networks = get_networks(debug)
+        enable_nd_network(networks, member, debug)
+        networks = get_networks(debug)
+        report_network(grid_mgr, networks)
     sys.exit()
 
 
@@ -108,20 +131,24 @@ def get_networks(debug):
         sys.exit(1)
 
 
-def enable_nd_network(networks):
+def enable_nd_network(networks, member, debug):
     if networks:
         for n in networks:
             enable_status = wapi.put(
                 n["_ref"],
                 params={
-                    "discovery_member": "sripaplt21usb05.net.us.corp",
+                    "discovery_member": member,
                     "enable_discovery": True,
                 },
             )
             if enable_status.status_code != 200:
-                log.error(enable_status.status_code, enable_status.text)
+                log.error(
+                    f"{enable_status.status_code}: {enable_status.json().get("code")}: {enable_status.json().get("text")}"
+                )
             else:
-                print(f"Network discovery enabled on {n["network"]}")
+                if debug:
+                    print(f"Network discovery enabled on {n["network"]}")
+                log.info(f"Network discovery enabled on {n["network"]}")
     else:
         log.error("Network object not provided")
 
@@ -141,7 +168,11 @@ def report_network(grid_mgr, network):
             discovery_enabled = "[green]True"
         else:
             discovery_enabled = "[red]False"
-        table.add_row(n["_ref"], n["network"], n["discovery_member"], discovery_enabled)
+        if "discovery_member" in n:
+            discovery_member = n["discovery_member"]
+        else:
+            discovery_member = "[red]None"
+        table.add_row(n["_ref"], n["network"], discovery_member, discovery_enabled)
     console = Console()
     console.print(table)
 
