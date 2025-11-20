@@ -90,8 +90,12 @@ def get_view(debug):
         )
         if dns_view.status_code != 200:
             if debug:
-                print(dns_view.status_code, dns_view.text)
-            log.error(dns_view.status_code, dns_view.text)
+                print(
+                    f"{dns_view.status_code}: {dns_view.json().get('code')}: {dns_view.json().get('text')}"
+                )
+            log.error(
+                f"{dns_view.status_code}: {dns_view.json().get('code')}: {dns_view.json().get('text')}"
+            )
         else:
             if debug:
                 log.info(dns_view.json())
