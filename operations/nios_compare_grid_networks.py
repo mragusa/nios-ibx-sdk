@@ -91,7 +91,17 @@ def main(
 
     old_grid_networks = get_networks(old_grid, debug)
     new_grid_networks = get_networks(new_grid, debug)
-    print(new_grid_networks)
+    if old_grid_networks and new_grid_networks:
+        print("Origin Grid: ", len(old_grid_networks))
+        print("Destination Grid: ", len(new_grid_networks))
+        old_networks = {n["network"] for n in old_grid_networks}
+        new_networks = {n["network"] for n in new_grid_networks}
+        only_in_old = old_networks - new_networks
+        old_in_new = new_networks - old_networks
+        # in_both = old_networks & new_networks
+        print("Only in Origin: ", only_in_old)
+        print("Only in Destination: ", old_in_new)
+        # print("In Both: ", in_both)
     sys.exit()
 
 
@@ -101,7 +111,7 @@ def get_networks(wapi, debug):
         nios_networks = wapi.get(
             "network",
             params={
-                "_max_results": 100000,
+                "_max_results": 110000,
                 "_return_fields": ["network", "network_view", "comment"],
             },
         )
@@ -120,3 +130,7 @@ def get_networks(wapi, debug):
     except WapiRequestException as err:
         log.error(err)
         sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()
