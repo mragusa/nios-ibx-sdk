@@ -24,7 +24,8 @@ log = init_logger(
 wapi = Gift()
 
 help_text = """
-Enable Network Discovery on Infoblox networks and containers
+Enable Network Discovery on Infoblox all networks and containers
+This script will retreive all network and network containers and update the network discovery flag
 """
 
 
@@ -92,24 +93,28 @@ def main(
             log.info(f"Connected to Infoblox grid manager {wapi.grid_mgr}")
         print(f"Connected to Infoblox grid manager {wapi.grid_mgr}")
     if get:
-        networks = get_networks(debug)
-        report_network(grid_mgr, networks)
+        network_objects = ["network", "networkcontainer"]
+        for n in network_objects:
+            networks = get_networks(n, debug)
+            report_network(grid_mgr, networks)
     if enable:
         # TODO clean up uptime querying
-        networks = get_networks(debug)
-        enable_nd_network(networks, member, debug)
-        networks = get_networks(debug)
-        report_network(grid_mgr, networks)
+        network_objects = ["network", "networkcontainer"]
+        for n in network_objects:
+            networks = get_networks(n, debug)
+            enable_nd_network(networks, member, debug)
+            networks = get_networks(n, debug)
+            report_network(grid_mgr, networks)
     sys.exit()
 
 
-def get_networks(debug):
+def get_networks(network, debug):
     try:
-        # Retrieve dns view from Infoblox appliance
+        # Retrieve networks from Infoblox appliance
         nios_networks = wapi.get(
-            "network",
+            network,
             params={
-                "_max_results": 5000,
+                "_max_results": 100000,
                 "_return_fields": [
                     "network",
                     "comment",
@@ -120,8 +125,12 @@ def get_networks(debug):
         )
         if nios_networks.status_code != 200:
             if debug:
-                print(nios_networks.status_code, nios_networks.text)
-            log.error(nios_networks.status_code, nios_networks.text)
+                print(
+                    f"{nios_networks.status_code}: {nios_networks.json().get('code')}: {nios_networks.json().get('text')}"
+                )
+            log.error(
+                f"{nios_networks.status_code}: {nios_networks.json().get('code')}: {nios_networks.json().get('text')}"
+            )
         else:
             if debug:
                 log.info(nios_networks.json())
