@@ -22,7 +22,7 @@ origin_grid = Gift()
 new_grid = Gift()
 
 help_text = """
-Basic Infoblox script to compare networks between Infoblox grids
+Infoblox script to compare networks between Infoblox grids
 """
 
 
@@ -89,7 +89,19 @@ def main(
             log.info(f"Connected to Infoblox grid manager {new_grid.grid_mgr}")
         print(f"Connected to Infoblox grid manager {new_grid.grid_mgr}")
 
-    nios_dns_objects = ["zone_auth", "view", "record:host", "record:a", "record:ptr"]
+    nios_dns_objects = [
+        "zone_auth",
+        "view",
+        "record:host",
+        "record:a",
+        "record:aaaa",
+        "record:ptr",
+        "record:cname",
+        "record:mx",
+        "record:srv",
+        "record:txt",
+        "vlan",
+    ]
     nios_network_objects = ["network", "networkcontainer"]
     for n in nios_network_objects:
         origin_grid_networks = get_networks(origin_grid, n, debug)
@@ -116,6 +128,9 @@ def main(
             if d == "zone_auth":
                 origin_dns = {d["fqdn"] for d in origin_grid_dns}
                 destination_dns = {d["fqdn"] for d in destination_grid_dns}
+            elif d == "record:ptr":
+                origin_dns = {d["ptrdname"] for d in origin_grid_dns}
+                destination_dns = {d["ptrdname"] for d in destination_grid_dns}
             else:
                 origin_dns = {d["name"] for d in origin_grid_dns}
                 destination_dns = {d["name"] for d in destination_grid_dns}
@@ -158,6 +173,8 @@ def get_networks(wapi, net_obj, debug):
 def get_dns(wapi, dns_obj, debug):
     if dns_obj == "zone_auth":
         obj_return_field = ["fqdn", "comment"]
+    elif dns_obj == "record:ptr":
+        obj_return_field = ["ptrdname", "comment"]
     else:
         obj_return_field = ["name", "comment"]
     try:
