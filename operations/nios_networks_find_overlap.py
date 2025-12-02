@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-
 import getpass
 import sys
 import ipaddress
@@ -24,6 +23,8 @@ wapi = Gift()
 
 help_text = """
 Infoblox script to compare import data to current prodution data to find overlaps
+Use flags to change the type of file checking done
+Currently can check for networks, fixed addresses, and DHCP ranges
 """
 
 
@@ -59,7 +60,7 @@ Infoblox script to compare import data to current prodution data to find overlap
     is_flag=True,
     default=False,
     show_default=True,
-    help="NIOS Range Import file",
+    help="NIOS Fixed Import file",
 )
 @optgroup.group("Optional Parameters")
 @optgroup.option(
@@ -110,6 +111,7 @@ def main(
             log.info(f"Connected to Infoblox grid manager {wapi.grid_mgr}")
         print(f"Connected to Infoblox grid manager {wapi.grid_mgr}")
     if network_check:
+        # TODO: Fix code duplication
         new_imports = []
         networks = get_network(debug)
         with open(file, newline="") as nios_network_file:
@@ -118,24 +120,35 @@ def main(
                 import_check = ipaddress.IPv4Network(
                     f"{n["address"]}/{n["netmask"]}", strict=False
                 )
-                new_imports.append(str(import_check))
+                new_imports.append(
+                    {"network": str(import_check), "comment": n["comment"]}
+                )
         if networks:
-            for net in networks:
-                if net["network"] in new_imports:
-                    if "comment" in net:
-                        print(
-                            f"Potential Overlap: {net["network"]} {net["network_view"]} {net["comment"]}"
-                        )
-                    else:
-                        print(
-                            f"Potential Overlap: {net["network"]} {net["network_view"]}"
-                        )
-                else:
-                    if debug:
-                        print(f"No Overlap: {net["network"]} {net["network_view"]}")
+            grid_by_net = {net["network"]: net for net in networks}
+            import_by_net = {net["network"]: net for net in new_imports}
+            overlap_networks = grid_by_net.keys() & import_by_net.keys()
+            only_in_grid = grid_by_net.keys() - import_by_net.keys()
+            only_in_import = import_by_net.keys() - grid_by_net.keys()
+            print("== Overlap ==")
+            for net in overlap_networks:
+                g = grid_by_net[net]
+                i = import_by_net[net]
+                print(
+                    f"Overlap: {net} Grid Comment: {g.get("comment")} Import Comment: {i.get("comment")}"
+                )
+            print("== Only in Grid ==")
+            for net in only_in_grid:
+                g = grid_by_net[net]
+                print(f"Only in Grid: {net} | comment={g.get("comment")}")
+            print("== Only in Import ==")
+            for net in only_in_import:
+                i = import_by_net[net]
+                print(f"Only in Import: {net} | comment={i.get("comment")}")
         else:
             print("Error: Review network retreival")
     elif range_check:
+        # TODO: Display differences from both places (grid vs import file)
+        # FIXME: rearrange compare logic and reverse logic for checking
         new_range_imports = []
         ranges = get_range(debug)
         with open(file, newline="") as nios_range_file:
@@ -171,6 +184,7 @@ def main(
                     if debug:
                         print(f"No Overlap Found: {r["start_addr"]} {r["end_addr"]}")
     elif fixed_check:
+        # FIXME: rearrange compare logic and reverse logic for checking
         new_fixed_imports = []
         fixed_addresses = get_fixed(debug)
         with open(file, newline="") as nios_fixed_file:
