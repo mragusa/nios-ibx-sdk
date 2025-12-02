@@ -52,6 +52,15 @@ Infoblox script to compare import data to current prodution data to find overlap
     show_default=True,
     help="NIOS Range Import file",
 )
+@optgroup.option(
+    "-s",
+    "--fixed-check",
+    required=True,
+    is_flag=True,
+    default=False,
+    show_default=True,
+    help="NIOS Range Import file",
+)
 @optgroup.group("Optional Parameters")
 @optgroup.option(
     "-u",
@@ -82,6 +91,7 @@ def main(
     file: str,
     network_check: bool,
     range_check: bool,
+    fixed_check: bool,
     debug: bool,
 ) -> None:
     if debug:
@@ -121,15 +131,76 @@ def main(
                             f"Potential Overlap: {net["network"]} {net["network_view"]}"
                         )
                 else:
-                    print(f"No Overlap: {net["network"]} {net["network_view"]}")
+                    if debug:
+                        print(f"No Overlap: {net["network"]} {net["network_view"]}")
         else:
             print("Error: Review network retreival")
     elif range_check:
         new_range_imports = []
         ranges = get_range(debug)
+        with open(file, newline="") as nios_range_file:
+            new_ranges = csv.DictReader(nios_range_file)
+            for n in new_ranges:
+                new_range_imports.append(
+                    {
+                        "start_addr": n["start_address"],
+                        "end_addr": n["end_address"],
+                        "network_view": n["network_view"],
+                    }
+                )
+        if ranges:
+            for r in ranges:
+                overlap = any(
+                    r["start_addr"] in range.values() for range in new_range_imports
+                )
+                if overlap:
+                    overlap_end = any(
+                        r["end_addr"] in range.values() for range in new_range_imports
+                    )
+                    if overlap_end:
+                        print(
+                            f"Potential Range Overlap: {r["start_addr"]} {r["end_addr"]} {r["network_view"]}"
+                        )
+                    else:
+                        print(
+                            f"Dhcp Range sized differently: {r["start_addr"]} {r["end_addr"]}"
+                        )
+                else:
+                    if debug:
+                        print(f"No Overlap Found: {r["start_addr"]} {r["end_addr"]}")
+    elif fixed_check:
+        new_fixed_imports = []
+        fixed_addresses = get_fixed(debug)
+        with open(file, newline="") as nios_fixed_file:
+            new_fixed = csv.DictReader(nios_fixed_file)
+            for n in new_fixed:
+                new_fixed_imports.append(
+                    {
+                        "ipv4addr": n["ip_address"],
+                        "name": n["name"],
+                        "mac": n["mac_address"],
+                        "comment": n["comment"],
+                    }
+                )
+        if fixed_addresses:
+            for f in fixed_addresses:
+                overlap = any(
+                    f["ipv4addr"] in fixed["ipv4addr"] for fixed in new_fixed_imports
+                )
+                if overlap:
+                    if "name" in f:
+                        print(
+                            f"Potential Overlap Found: {f["name"]} {f["ipv4addr"]} {f["network_view"]}"
+                        )
+                    else:
+                        print(
+                            f"Potential Overlap Found: {f["mac"]} {f["ipv4addr"]} {f["network_view"]}"
+                        )
+                else:
+                    if debug:
+                        print(f"No Overlap {f["ipv4addr"]}")
     else:
         print("Invalid option provided")
-    # report_network(grid_mgr, networks)
     sys.exit()
 
 
@@ -191,55 +262,33 @@ def get_range(debug):
         sys.exit(1)
 
 
-def get_host(debug):
-    try:
-        # Retrieve dns view from Infoblox appliance
-        nios_network = wapi.get(
-            "network",
-            params={
-                "_max_results": 150000,
-                "_return_fields": ["network", "netmask", "comment", "network_view"],
-            },
-        )
-        if nios_network.status_code != 200:
-            if debug:
-                print(
-                    f"{nios_network.status_code}: {nios_network.json().get('code')}: {nios_network.json().get('text')}"
-                )
-            log.error(
-                f"{nios_network.status_code}: {nios_network.json().get('code')}: {nios_network.json().get('text')}"
-            )
-        else:
-            if debug:
-                log.info(nios_network.json())
-            return nios_network.json()
-    except WapiRequestException as err:
-        log.error(err)
-        sys.exit(1)
-
-
 def get_fixed(debug):
     try:
-        # Retrieve dns view from Infoblox appliance
-        nios_network = wapi.get(
-            "network",
+        nios_fixed = wapi.get(
+            "fixedaddress",
             params={
                 "_max_results": 150000,
-                "_return_fields": ["network", "netmask", "comment", "network_view"],
+                "_return_fields": [
+                    "name",
+                    "ipv4addr",
+                    "comment",
+                    "network_view",
+                    "mac",
+                ],
             },
         )
-        if nios_network.status_code != 200:
+        if nios_fixed.status_code != 200:
             if debug:
                 print(
-                    f"{nios_network.status_code}: {nios_network.json().get('code')}: {nios_network.json().get('text')}"
+                    f"{nios_fixed.status_code}: {nios_fixed.json().get('code')}: {nios_fixed.json().get('text')}"
                 )
             log.error(
-                f"{nios_network.status_code}: {nios_network.json().get('code')}: {nios_network.json().get('text')}"
+                f"{nios_fixed.status_code}: {nios_fixed.json().get('code')}: {nios_fixed.json().get('text')}"
             )
         else:
             if debug:
-                log.info(nios_network.json())
-            return nios_network.json()
+                log.info(nios_fixed.json())
+            return nios_fixed.json()
     except WapiRequestException as err:
         log.error(err)
         sys.exit(1)
