@@ -9,6 +9,8 @@ from click_option_group import optgroup
 from ibx_sdk.logger.ibx_logger import init_logger, increase_log_level
 from ibx_sdk.nios.exceptions import WapiRequestException
 from ibx_sdk.nios.gift import Gift
+from rich.console import Console
+from rich.table import Table
 
 log = init_logger(
     logfile_name="wapi.log",
@@ -121,7 +123,11 @@ def main(
                     f"{n["address"]}/{n["netmask"]}", strict=False
                 )
                 new_imports.append(
-                    {"network": str(import_check), "comment": n["comment"]}
+                    {
+                        "network": str(import_check),
+                        "comment": n["comment"],
+                        "network_view": n["network_view"],
+                    }
                 )
         if networks:
             grid_by_net = {net["network"]: net for net in networks}
@@ -129,21 +135,35 @@ def main(
             overlap_networks = grid_by_net.keys() & import_by_net.keys()
             only_in_grid = grid_by_net.keys() - import_by_net.keys()
             only_in_import = import_by_net.keys() - grid_by_net.keys()
-            print("== Overlap ==")
+            table = Table(
+                "Network",
+                "Grid Network View",
+                "Import Network View",
+                "Grid Comment",
+                "Import Comment",
+                title="Overlapping Networks: Grid vs Import",
+            )
             for net in overlap_networks:
                 g = grid_by_net[net]
                 i = import_by_net[net]
-                print(
-                    f"Overlap: {net} Grid Comment: {g.get("comment")} Import Comment: {i.get("comment")}"
+                table.add_row(
+                    net,
+                    g.get("network_view"),
+                    i.get("network_view"),
+                    g.get("comment"),
+                    i.get("comment"),
                 )
-            print("== Only in Grid ==")
+            Console().print(table)
+            table = Table("Network", "Comment", title="NIOS Only")
             for net in only_in_grid:
                 g = grid_by_net[net]
-                print(f"Only in Grid: {net} | comment={g.get("comment")}")
-            print("== Only in Import ==")
+                table.add_row(net, g.get("comment"))
+            Console().print(table)
+            table = Table("Network", "Comment", title="Import Only")
             for net in only_in_import:
                 i = import_by_net[net]
-                print(f"Only in Import: {net} | comment={i.get("comment")}")
+                table.add_row(net, i.get("comment"))
+            Console().print(table)
         else:
             print("Error: Review network retreival")
     elif range_check:
