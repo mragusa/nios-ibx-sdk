@@ -151,11 +151,13 @@ def main(
         if ranges:
             for r in ranges:
                 overlap = any(
-                    r["start_addr"] in range.values() for range in new_range_imports
+                    r["start_addr"] in range["start_addr"]
+                    for range in new_range_imports
                 )
                 if overlap:
                     overlap_end = any(
-                        r["end_addr"] in range.values() for range in new_range_imports
+                        r["end_addr"] in range["end_addr"]
+                        for range in new_range_imports
                     )
                     if overlap_end:
                         print(
