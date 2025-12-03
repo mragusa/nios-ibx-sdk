@@ -181,10 +181,10 @@ def main(
                         "network_view": n["network_view"],
                     }
                 )
-                # TODO: Change origin to grid and destination to import
         if debug:
             print(f"Total NIOS Ranges: {len(nios_ranges)}")
             print(f"Total Import Ranges: {len(new_range_imports)}")
+        # TODO: Change origin to grid and destination to import
         normalize_range(nios_ranges)
         normalize_range(new_range_imports)
         if debug:
@@ -193,20 +193,17 @@ def main(
                     print("grid sample:", r)
             for r in new_range_imports[:3]:
                 print("import sample:", r)
-        origin_sorted = sorted(new_range_imports, key=lambda r: r["start_int"])
-        destination_sorted = sorted(nios_ranges, key=lambda r: r["start_int"])
+        import_sorted = sorted(new_range_imports, key=lambda r: r["start_int"])
+        grid_sorted = sorted(nios_ranges, key=lambda r: r["start_int"])
         j = 0
-        for o in origin_sorted:
+        for o in import_sorted:
             print(
                 f"\nProcessing origin: {o['start_addr']}–{o['end_addr']} "
                 f"({o['start_int']}–{o['end_int']})"
             )
 
-            while (
-                j < len(destination_sorted)
-                and destination_sorted[j]["end_int"] < o["start_int"]
-            ):
-                d = destination_sorted[j]
+            while j < len(grid_sorted) and grid_sorted[j]["end_int"] < o["start_int"]:
+                d = grid_sorted[j]
                 print(
                     f"  Skipping dest (ends before origin starts): "
                     f"{d['start_addr']}–{d['end_addr']} ({d['start_int']}–{d['end_int']})"
@@ -214,23 +211,20 @@ def main(
                 j += 1
 
             k = j
-            while (
-                k < len(destination_sorted)
-                and destination_sorted[k]["start_int"] <= o["end_int"]
-            ):
+            while k < len(grid_sorted) and grid_sorted[k]["start_int"] <= o["end_int"]:
                 if debug:
                     print(
                         "checking:",
                         "k",
                         k,
                         "len",
-                        len(destination_sorted),
+                        len(grid_sorted),
                         "dest_start",
-                        destination_sorted[k]["start_int"],
+                        grid_sorted[k]["start_int"],
                         "o_end",
                         o["end_int"],
                     )
-                d = destination_sorted[k]
+                d = grid_sorted[k]
                 print(
                     f"  Candidate dest: {d['start_addr']}–{d['end_addr']} "
                     f"({d['start_int']}–{d['end_int']})"
