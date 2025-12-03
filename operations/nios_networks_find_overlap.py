@@ -261,7 +261,7 @@ def main(
         if fixed_addresses:
             for f in fixed_addresses:
                 overlap = any(
-                    f["ipv4addr"] in fixed["ipv4addr"] for fixed in new_fixed_imports
+                    f["ipv4addr"] == fixed["ipv4addr"] for fixed in new_fixed_imports
                 )
                 if overlap:
                     if "name" in f:
