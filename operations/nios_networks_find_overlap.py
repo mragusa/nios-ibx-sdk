@@ -97,6 +97,12 @@ def main(
     fixed_check: bool,
     debug: bool,
 ) -> None:
+    mode_count = sum([network_check, range_check, fixed_check])
+    if mode_count != 1:
+        print(
+            "Error: please specify exactly one of --network-check, --range-check, or --fixed-check."
+        )
+        sys.exit(1)
     if debug:
         increase_log_level()
     wapi.grid_mgr = grid_mgr
@@ -260,15 +266,15 @@ def main(
                 if overlap:
                     if "name" in f:
                         print(
-                            f"Potential Overlap Found: {f["name"]} {f["ipv4addr"]} {f["network_view"]}"
+                            f"Potential Overlap Found: {f['name']} {f['ipv4addr']} {f['network_view']}"
                         )
                     else:
                         print(
-                            f"Potential Overlap Found: {f["mac"]} {f["ipv4addr"]} {f["network_view"]}"
+                            f"Potential Overlap Found: {f['mac']} {f['ipv4addr']} {f['network_view']}"
                         )
                 else:
                     if debug:
-                        print(f"No Overlap {f["ipv4addr"]}")
+                        print(f"No Overlap {f['ipv4addr']}")
     else:
         print("Invalid option provided")
     sys.exit()
