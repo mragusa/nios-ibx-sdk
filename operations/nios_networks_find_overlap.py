@@ -168,9 +168,9 @@ def main(
             print("Error: Review network retreival")
     elif range_check:
         # TODO: Display differences from both places (grid vs import file)
-        # FIXME: rearrange compare logic and reverse logic for checking
+        # TODO: Reduce code block with better functions
         new_range_imports = []
-        ranges = get_range(debug)
+        nios_ranges = get_range(debug)
         with open(file, newline="") as nios_range_file:
             new_ranges = csv.DictReader(nios_range_file)
             for n in new_ranges:
@@ -181,30 +181,70 @@ def main(
                         "network_view": n["network_view"],
                     }
                 )
-        if ranges:
-            for r in ranges:
-                overlap = any(
-                    r["start_addr"] in range["start_addr"]
-                    for range in new_range_imports
+                # TODO: Change origin to grid and destination to import
+        if debug:
+            print(f"Total NIOS Ranges: {len(nios_ranges)}")
+            print(f"Total Import Ranges: {len(new_range_imports)}")
+        normalize_range(nios_ranges)
+        normalize_range(new_range_imports)
+        if debug:
+            if nios_ranges:
+                for r in nios_ranges[:3]:
+                    print("grid sample:", r)
+            for r in new_range_imports[:3]:
+                print("import sample:", r)
+        origin_sorted = sorted(new_range_imports, key=lambda r: r["start_int"])
+        destination_sorted = sorted(nios_ranges, key=lambda r: r["start_int"])
+        j = 0
+        for o in origin_sorted:
+            print(
+                f"\nProcessing origin: {o['start_addr']}–{o['end_addr']} "
+                f"({o['start_int']}–{o['end_int']})"
+            )
+
+            while (
+                j < len(destination_sorted)
+                and destination_sorted[j]["end_int"] < o["start_int"]
+            ):
+                d = destination_sorted[j]
+                print(
+                    f"  Skipping dest (ends before origin starts): "
+                    f"{d['start_addr']}–{d['end_addr']} ({d['start_int']}–{d['end_int']})"
                 )
-                if overlap:
-                    overlap_end = any(
-                        r["end_addr"] in range["end_addr"]
-                        for range in new_range_imports
+                j += 1
+
+            k = j
+            while (
+                k < len(destination_sorted)
+                and destination_sorted[k]["start_int"] <= o["end_int"]
+            ):
+                if debug:
+                    print(
+                        "checking:",
+                        "k",
+                        k,
+                        "len",
+                        len(destination_sorted),
+                        "dest_start",
+                        destination_sorted[k]["start_int"],
+                        "o_end",
+                        o["end_int"],
                     )
-                    if overlap_end:
-                        print(
-                            f"Potential Range Overlap: {r["start_addr"]} {r["end_addr"]} {r["network_view"]}"
-                        )
-                    else:
-                        print(
-                            f"Dhcp Range sized differently: {r["start_addr"]} {r["end_addr"]}"
-                        )
+                d = destination_sorted[k]
+                print(
+                    f"  Candidate dest: {d['start_addr']}–{d['end_addr']} "
+                    f"({d['start_int']}–{d['end_int']})"
+                )
+                if overlaps(o, d):
+                    print(
+                        f"  >>> Range Overlap: "
+                        f"origin={o['start_addr']}–{o['end_addr']} | "
+                        f"dest={d['start_addr']}–{d['end_addr']}"
+                    )
                 else:
-                    if debug:
-                        print(f"No Overlap Found: {r["start_addr"]} {r["end_addr"]}")
+                    print("    (no overlap according to overlaps())")
+                k += 1
     elif fixed_check:
-        # FIXME: rearrange compare logic and reverse logic for checking
         new_fixed_imports = []
         fixed_addresses = get_fixed(debug)
         with open(file, newline="") as nios_fixed_file:
@@ -238,6 +278,36 @@ def main(
     else:
         print("Invalid option provided")
     sys.exit()
+
+
+def normalize_range(ranges):
+    for r in ranges:
+        v_start, start_int = convert_ip_int(r["start_addr"])
+        v_end, end_int = convert_ip_int(r["end_addr"])
+
+        if v_start != v_end:
+            raise ValueError(
+                f"Mixed IP versions in range: {r['start_addr']} - {r['end_addr']}"
+            )
+
+        # store version and integer bounds
+        r["version"] = v_start
+        r["start_int"] = min(start_int, end_int)
+        r["end_int"] = max(start_int, end_int)
+
+
+def convert_ip_int(ip_str: str) -> tuple[int, int]:
+    ip_obj = ipaddress.ip_address(ip_str)
+    return (ip_obj.version, int(ip_obj))
+
+
+def overlaps(origin, destination) -> bool:
+    if origin["version"] != destination["version"]:
+        return False
+    return not (
+        origin["end_int"] < destination["start_int"]
+        or destination["end_int"] < origin["start_int"]
+    )
 
 
 def get_network(debug):
