@@ -330,7 +330,7 @@ def get_network(debug):
         sys.exit(1)
 
 
-def get_range(debug):
+def get_range(debug: bool):
     try:
         nios_range = wapi.get(
             "range",
@@ -353,6 +353,7 @@ def get_range(debug):
             log.error(
                 f"{nios_range.status_code}: {nios_range.json().get('code')}: {nios_range.json().get('text')}"
             )
+            return nios_range.json()
         else:
             if debug:
                 log.info(nios_range.json())
