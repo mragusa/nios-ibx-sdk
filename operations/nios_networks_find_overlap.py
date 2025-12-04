@@ -260,18 +260,21 @@ def main(
                 )
         if fixed_addresses:
             for f in fixed_addresses:
-                overlap = any(
-                    f["ipv4addr"] == fixed["ipv4addr"] for fixed in new_fixed_imports
-                )
-                if overlap:
-                    if "name" in f:
-                        print(
-                            f"Potential Overlap Found: {f['name']} {f['ipv4addr']} {f['network_view']}"
-                        )
-                    else:
-                        print(
-                            f"Potential Overlap Found: {f['mac']} {f['ipv4addr']} {f['network_view']}"
-                        )
+                matches = [
+                    fixed
+                    for fixed in new_fixed_imports
+                    if fixed["ipv4addr"] == f["ipv4addr"]
+                ]
+                if matches:
+                    for m in matches:
+                        if "name" in f:
+                            print(
+                                f"Potential Overlap Found: {f['name']} {f['ipv4addr']} {f['network_view']} Import File: {m.get("name")} Import Network View: {m.get("network_view")}"
+                            )
+                        else:
+                            print(
+                                f"Potential Overlap Found: {f['mac']} {f['ipv4addr']} {f['network_view']} Import file: {m.get("name")} Import Network View: {m.get("network_view")}"
+                            )
                 else:
                     if debug:
                         print(f"No Overlap {f['ipv4addr']}")
