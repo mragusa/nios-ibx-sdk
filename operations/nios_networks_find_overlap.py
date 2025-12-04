@@ -259,6 +259,7 @@ def main(
                     }
                 )
         if fixed_addresses:
+            # TODO: Updated code to use rich tables
             for f in fixed_addresses:
                 matches = [
                     fixed
