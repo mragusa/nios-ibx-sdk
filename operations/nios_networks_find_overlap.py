@@ -187,10 +187,8 @@ def main(
                         "network_view": n["network_view"],
                     }
                 )
-        if debug:
-            print(f"Total NIOS Ranges: {len(nios_ranges)}")
-            print(f"Total Import Ranges: {len(new_range_imports)}")
-        # TODO: Change origin to grid and destination to import
+        print(f"Total NIOS Ranges: {len(nios_ranges)}")
+        print(f"Total Import Ranges: {len(new_range_imports)}")
         normalize_range(nios_ranges)
         normalize_range(new_range_imports)
         if debug:
@@ -202,13 +200,13 @@ def main(
         import_sorted = sorted(new_range_imports, key=lambda r: r["start_int"])
         grid_sorted = sorted(nios_ranges, key=lambda r: r["start_int"])
         j = 0
-        for o in import_sorted:
+        for i in import_sorted:
             print(
-                f"\nProcessing origin: {o['start_addr']}–{o['end_addr']} "
-                f"({o['start_int']}–{o['end_int']})"
+                f"\nProcessing Import: {i['start_addr']}–{i['end_addr']} "
+                f"({i['start_int']}–{i['end_int']})"
             )
 
-            while j < len(grid_sorted) and grid_sorted[j]["end_int"] < o["start_int"]:
+            while j < len(grid_sorted) and grid_sorted[j]["end_int"] < i["start_int"]:
                 d = grid_sorted[j]
                 print(
                     f"  Skipping dest (ends before origin starts): "
@@ -217,7 +215,7 @@ def main(
                 j += 1
 
             k = j
-            while k < len(grid_sorted) and grid_sorted[k]["start_int"] <= o["end_int"]:
+            while k < len(grid_sorted) and grid_sorted[k]["start_int"] <= i["end_int"]:
                 if debug:
                     print(
                         "checking:",
@@ -228,17 +226,17 @@ def main(
                         "dest_start",
                         grid_sorted[k]["start_int"],
                         "o_end",
-                        o["end_int"],
+                        i["end_int"],
                     )
                 d = grid_sorted[k]
                 print(
                     f"  Candidate dest: {d['start_addr']}–{d['end_addr']} "
                     f"({d['start_int']}–{d['end_int']})"
                 )
-                if overlaps(o, d):
+                if overlaps(i, d):
                     print(
                         f"  >>> Range Overlap: "
-                        f"origin={o['start_addr']}–{o['end_addr']} | "
+                        f"origin={i['start_addr']}–{i['end_addr']} | "
                         f"dest={d['start_addr']}–{d['end_addr']}"
                     )
                 else:
@@ -259,6 +257,16 @@ def main(
                     }
                 )
         if fixed_addresses:
+            table = Table(
+                "NIOS Hostname",
+                "NIOS MAC",
+                "IPv4 Address",
+                "NIOS Network View",
+                "Import Hostname",
+                "Import MAC",
+                "Import Network View",
+                title="Potential Overlap",
+            )
             # TODO: Updated code to use rich tables
             for f in fixed_addresses:
                 matches = [
@@ -269,16 +277,29 @@ def main(
                 if matches:
                     for m in matches:
                         if "name" in f:
-                            print(
-                                f"Potential Overlap Found: {f['name']} {f['ipv4addr']} {f['network_view']} Import File: {m.get("name")} Import Network View: {m.get("network_view")}"
+                            table.add_row(
+                                f["name"],
+                                f["mac"],
+                                f["ipv4addr"],
+                                f["network_view"],
+                                m.get("name"),
+                                m.get("mac"),
+                                m.get("network_view"),
                             )
                         else:
-                            print(
-                                f"Potential Overlap Found: {f['mac']} {f['ipv4addr']} {f['network_view']} Import file: {m.get("name")} Import Network View: {m.get("network_view")}"
+                            table.add_row(
+                                "None",
+                                f["mac"],
+                                f["ipv4addr"],
+                                f["network_view"],
+                                m.get("name"),
+                                m.get("mac"),
+                                m.get("network_view"),
                             )
                 else:
                     if debug:
                         print(f"No Overlap {f['ipv4addr']}")
+            Console().print(table)
     else:
         print("Invalid option provided")
     sys.exit()
