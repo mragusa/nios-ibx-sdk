@@ -25,14 +25,15 @@ wapi = Gift()
 
 help_text = """
 Script to interface with A records inside of an Infoblox grid.
-Operations:
-    Add
-    Delete
-    Update
 
-Script operations are logged to wapi.log inside of present working directory. 
-Update operations support modifying TTL, FQDN, and IP address.
-TTL defaults to 600 seconds for new records and 5 seconds for IP address updates.
+Operations: \n
+    - Add \n
+    - Delete \n
+    - Update \n
+
+Script operations are logged to wapi.log inside of current working directory. \n
+Update operations support modifying TTL, FQDN, and IP address. \n
+TTL defaults to 600 seconds for new records and 5 seconds for IP address updates. \n
 """
 current_time = date.today()
 
@@ -58,23 +59,26 @@ current_time = date.today()
     help="Infoblox admin username",
 )
 @optgroup.option(
-    "-w", "--wapi-ver", default="2.11", show_default=True, help="Infoblox WAPI version"
+    "-w", "--wapi-ver", default="2.13", show_default=True, help="Infoblox WAPI version"
 )
-@optgroup.option("-t", "--ttl", default=600, help="TTL in seconds")
-@optgroup.option("-d", "--disable", is_flag=True, help="Disable record")
+@optgroup.option("-t", "--ttl", show_default=True, default=600, help="TTL in seconds")
+@optgroup.option("-d", "--disable", is_flag=True, default=False, help="Disable record")
 @optgroup.option(
     "-c",
     "--comment",
+    show_default=True,
     default=current_time,
     help="Comment for record: default is creation date",
 )
-@optgroup.option("-v", "--view", default="default", help="DNS view")
+@optgroup.option("-v", "--view", show_default=True, default="default", help="DNS view")
 @optgroup.group("Update Parameters")
 @optgroup.option("--newname", help="New Hostname")
 @optgroup.option("--newip", help="New IP Address")
-@optgroup.option("--newttl", default=5, help="New TTL")
+@optgroup.option("--newttl", show_default=True, default=5, help="New TTL")
 @optgroup.group("Logging Parameters")
-@optgroup.option("--debug", is_flag=True, help="enable verbose debug output")
+@optgroup.option(
+    "--debug", is_flag=True, default=False, help="enable verbose debug output"
+)
 def main(
     grid_mgr: str,
     add: bool,
@@ -133,8 +137,12 @@ def add_arecord(fqdn, ip, comment, disable, ttl):
         log.error(err)
         sys.exit(1)
     if a_record.status_code != 201:
-        print(f"Record creation failed: {a_record.status_code} {a_record.text}")
-        log.error(f"Record creation failed: {a_record.status_code} {a_record.text}")
+        print(
+            f"Record creation failed: {a_record.status_code} {a_record.json().get('code')} {a_record.json().get('text')}"
+        )
+        log.error(
+            f"Record creation failed: {a_record.status_code} {a_record.json().get('code')} {a_record.json().get('text')}"
+        )
     else:
         print(f"Record creation successful {a_record.json()}")
         log.info(f"Record creation successful {a_record.json()}")
@@ -154,10 +162,10 @@ def del_arecord(fqdn, ip, view):
         sys.exit(1)
     if a_record_delete.status_code != 200:
         print(
-            f"Record deletion failed: {a_record_delete.status_code} {a_record_delete.text}"
+            f"Record deletion failed: {a_record_delete.status_code} {a_record_delete.json().get('code')} {a_record_delete.json().get('text')}"
         )
         log.error(
-            f"Record deletion failed: {a_record_delete.status_code} {a_record_delete.text}"
+            f"Record deletion failed: {a_record_delete.status_code} {a_record_delete.json().get('code')} {a_record_delete.json().get('text')}"
         )
     else:
         print(f"Record deletion successful {a_record_delete.json()}")
@@ -185,10 +193,10 @@ def update_arecord(fqdn, ip, view, newip, newname, newttl):
             a_record_update = wapi.put(a_record_ref, json=updated_rdata)
             if a_record_update.status_code != 200:
                 print(
-                    f"Record update failed: {a_record_update.status_code} {a_record_update.text}"
+                    f"Record update failed: {a_record_update.status_code} {a_record_update.json().get('code')} {a_record_update.json().get('text')}"
                 )
                 log.error(
-                    f"Record update failed: {a_record_update.status_code} {a_record_update.text}"
+                    f"Record update failed: {a_record_update.status_code} {a_record_update.json().get('code')} {a_record_update.json().get('text')}"
                 )
             else:
                 print(f"Record update successful {a_record_update.json()}")
