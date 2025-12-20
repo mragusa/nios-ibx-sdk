@@ -208,11 +208,13 @@ def update_arecord(fqdn, ip, view, newip, newname, newttl):
                     log.info(f"Record update successful {a_record_update.json()}")
             except WapiRequestException as err:
                 print(err)
+                log.error(err)
+        else:
+            print("Updated Rdata not provided")
+            log.info("Updated Rdata not provided")
+            sys.exit(1)
     except WapiRequestException as err:
         log.error(err)
-        sys.exit(1)
-    else:
-        print("Updated Rdata not provided")
         sys.exit(1)
 
 
