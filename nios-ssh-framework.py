@@ -6,12 +6,10 @@ import getpass
 import click
 from click_option_group import optgroup
 
-# prompt = r'\r\n\r\n\r\n\s+Infoblox NIOS Release 9\.0\.3-50212-ee11d5834df9 \(64bit\)\r\n\s+Copyright \(c\) 1999-2023 Infoblox Inc. All Rights Reserved\.\r\n\r\n\s+type \'help\' for more information\r\n\r\n\r\nInfoblox > '
-
 prompt = r".* Infoblox > "
 
 help_text = """
-Explaination of script
+Basic script to issues commands to the NIOS cli via ssh
 """
 
 
@@ -24,9 +22,6 @@ Explaination of script
 @optgroup.option(
     "-u", "--username", default="admin", required=True, help="Infoblox admin username"
 )
-@optgroup.group("Optional Parameters")
-
-
 def main(grid: str, username: str) -> None:
 
     command = "show version"
