@@ -27,6 +27,7 @@ Interact with Infoblox members via ssh to enable, disable or show ADP monitor-mo
 @optgroup.option("-d", "--disable", is_flag=True, help="Disable ADP monitor mode")
 @optgroup.option("-s", "--show", is_flag=True, help="Show ADP monitor mode status")
 def main(grid: str, username: str, enable: bool, disable: bool, show: bool) -> None:
+    command = ""
     if enable:
         command = "set adp monitor-mode on"
     if disable:

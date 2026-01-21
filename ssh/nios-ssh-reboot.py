@@ -26,8 +26,12 @@ For more information:
     "-u", "--username", default="admin", required=True, help="Infoblox admin username"
 )
 @optgroup.group("Optional Parameters")
-@optgroup.option("-r", "--reboot", is_flag=True, help="Reboot Grid Member")
-@optgroup.option("-s", "--shutdown", is_flag=True, help="Shutdown Grid Member")
+@optgroup.option(
+    "-r", "--reboot", is_flag=True, default=False, help="Reboot Grid Member"
+)
+@optgroup.option(
+    "-s", "--shutdown", is_flag=True, default=False, help="Shutdown Grid Member"
+)
 def main(grid: str, username: str, reboot: bool, shutdown: bool) -> None:
     command = ""
     if reboot:

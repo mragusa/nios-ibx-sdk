@@ -26,13 +26,23 @@ For more information:
     "-u", "--username", default="admin", required=True, help="Infoblox admin username"
 )
 @optgroup.group("Optional Parameters")
-@optgroup.option("-e", "--enable", is_flag=True, help="Enable DNS Tap")
-@optgroup.option("-d", "--disable", is_flag=True, help="Disable DNS Tap")
-@optgroup.option("-s", "--status", is_flag=True, help="Show DNS Tap status")
-@optgroup.option("--statistics", is_flag=True, help="Show DNS Tap statistics")
+@optgroup.option("-e", "--enable", is_flag=True, default=False, help="Enable DNS Tap")
+@optgroup.option("-d", "--disable", is_flag=True, default=False, help="Disable DNS Tap")
+@optgroup.option(
+    "-s", "--status", is_flag=True, default=False, help="Show DNS Tap status"
+)
+@optgroup.option(
+    "--statistics", is_flag=True, default=False, help="Show DNS Tap statistics"
+)
 def main(
-    grid: str, username: str, enable: bool, disable: bool, show: bool, statistics: bool
+    grid: str,
+    username: str,
+    enable: bool,
+    disable: bool,
+    status: bool,
+    statistics: bool,
 ) -> None:
+    command = ""
     if enable:
         command = "set enable_dnstap on"
     if disable:
