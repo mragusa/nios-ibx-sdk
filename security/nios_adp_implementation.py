@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-
 import getpass
 import sys
 import re
@@ -47,7 +46,9 @@ For more information, please engage your Infoblox Professional Services Engineer
 @optgroup.option(
     "-r", "--recursive", is_flag=True, help="Infoblox members are recursive"
 )
-@optgroup.option("-a", "--authoritative", is_flag=True, help="Infoblox members are authoritative")
+@optgroup.option(
+    "-a", "--authoritative", is_flag=True, help="Infoblox members are authoritative"
+)
 @optgroup.option(
     "-u",
     "--username",
@@ -56,11 +57,10 @@ For more information, please engage your Infoblox Professional Services Engineer
     help="Infoblox admin username",
 )
 @optgroup.option(
-    "-w", "--wapi-ver", default="2.11", show_default=True, help="Infoblox WAPI version"
+    "-w", "--wapi-ver", default="2.13", show_default=True, help="Infoblox WAPI version"
 )
 @optgroup.group("Logging Parameters")
 @optgroup.option("--debug", is_flag=True, help="enable verbose debug output")
-
 def main(
     grid_mgr: str,
     username: str,
@@ -68,12 +68,12 @@ def main(
     name: str,
     members: str,
     recursive: bool,
-    authoritative: bool,
+    # authoritative: bool,
     debug: bool,
 ) -> None:
     grid_members_dns = []
     recursive_sids = []
-    authoritative_sids = []
+    # authoritative_sids = []
     if debug:
         increase_log_level()
     wapi.grid_mgr = grid_mgr
@@ -81,7 +81,7 @@ def main(
     password = getpass.getpass(f"Enter password for [{username}]: ")
     try:
         wapi.connect(username=username, password=password)
-    except WapiRequest as err:
+    except WapiRequestException as err:
         log.error(err)
         sys.exit(1)
     else:
@@ -103,38 +103,33 @@ def main(
                     ]
                 },
             )
-        except WapiRequest as err:
+        except WapiRequestException as err:
             log.error(err)
             sys.exit(1)
         if grid_members.status_code != 200:
-            log.error("no members found: %s", grid_members.text)
+            log.error(
+                "no members found:%s %s", grid_members.status_code, grid_members.text
+            )
         else:
             log.info("grid members found")
             found_members = grid_members.json()
             for gm in found_members:
                 for service in gm["service_status"]:
-                    if (
-                        service["service"] == "DNS"
-                        and service["status"] == "WORKING"
-                    ):
-                        log.info(
-                            "Host: %s DNS Service: %s", gm["host_name"], service
-                        )
+                    if service["service"] == "DNS" and service["status"] == "WORKING":
+                        log.info("Host: %s DNS Service: %s", gm["host_name"], service)
                         grid_members_dns.append(gm["host_name"])
                     else:
-                        log.error(
-                            "Host: %s DNS Service: %s", gm["host_name"], service
-                        )
+                        log.error("Host: %s DNS Service: %s", gm["host_name"], service)
     # Determine existing ruleset
     try:
         ruleset = wapi.get(
             "grid:threatprotection", params={"_return_fields": "current_ruleset"}
         )
-    except WapiRequest as err:
+    except WapiRequestException as err:
         log.error(err)
         sys.exit(1)
     if ruleset.status_code != 200:
-        log.error("no adp rules found: %s", ruleset.text)
+        log.error("no adp rules found:%s %s", ruleset.status_code, ruleset.text)
     else:
         # Create ADP profile
         rs = ruleset.json()
@@ -148,7 +143,7 @@ def main(
                     "current_ruleset": rs[0]["current_ruleset"],
                 },
             )
-        except WapiRequest as err:
+        except WapiRequestException as err:
             log.error(err)
             sys.exit(1)
         if new_adp_profile.status_code != 201:
@@ -165,7 +160,7 @@ def main(
             "threatprotection:grid:rule",
             params={"_return_fields": ["name", "sid", "category"]},
         )
-    except WapiRequest as err:
+    except WapiRequestException as err:
         log.error(err)
         sys.exit(1)
     if grid_rules.status_code != 200:
@@ -178,18 +173,14 @@ def main(
             cat_name = category[2].replace("%2F", "/")
             plain_cat_name = cat_name.replace("%2F", "/")
             if recursive:
-                recursive_server_search = re.compile(
-                    r"Malware|Tunnel", re.IGNORECASE
-                )
-                recursive_server_search = re.compile(
-                    r"Malware|Tunnel", re.IGNORECASE
-                )
+                recursive_server_search = re.compile(r"Malware|Tunnel", re.IGNORECASE)
+                recursive_server_search = re.compile(r"Malware|Tunnel", re.IGNORECASE)
                 recursive_server_category = recursive_server_search.findall(
                     plain_cat_name
                 )
                 if recursive_server_category:
                     recursive_sids.append(rules["sid"])
-            # TODO determine how to disable specific record types (maybe from predefined list)
+            # TODO: determine how to disable specific record types (maybe from predefined list)
             #   if authoritative:
             #       authoritative_server_search = re.compile(r"DNS Message Types", re.IGNORECASE)
             #       authoritative_server_category = authoritative_server_search.findall( plain_cat_name)
@@ -200,8 +191,8 @@ def main(
     try:
         profile_rules = wapi.get(
             "threatprotection:profile:rule",
-                params={
-                    "_return_fields": [
+            params={
+                "_return_fields": [
                     "profile",
                     "rule",
                     "disable",
@@ -209,15 +200,19 @@ def main(
                     "sid",
                     "use_config",
                     "use_disable",
-                    ]
-                },
-            )
-    except WapiRequest as err:
+                ]
+            },
+        )
+    except WapiRequestException as err:
         log.error(err)
         sys.exit(1)
         # Update profile rules
     if profile_rules.status_code != 200:
-        log.error("no adp profile rules found: %s", profile_rules.text)
+        log.error(
+            "no adp profile rules found: %s %s",
+            profile_rules.status_code,
+            profile_rules.text,
+        )
     else:
         log.info("adp profile rules found")
         rules = profile_rules.json()
@@ -238,13 +233,11 @@ def main(
                 enable_rule(pr["rule"], pr["_ref"])
             if recursive:
                 if pr["sid"] in recursive_sids:
-                    log.info(
-                        "Rules: %s, SID: %s", pr["rule"], pr["sid"]
-                    )
+                    log.info("Rules: %s, SID: %s", pr["rule"], pr["sid"])
                     enable_rule(pr["rule"], pr["_ref"])
-            #if authoritative:
-                # TODO add logic
-                #log.error("currently under construction")
+            # if authoritative:
+            # TODO: add logic
+            # log.error("currently under construction")
 
     sys.exit()
 
@@ -254,13 +247,13 @@ def main(
 def enable_rule(rule, ref):
     try:
         enabled_rule = wapi.put(ref, json={"disable": False, "use_disable": True})
-    except WapiRequest as err:
+    except WapiRequestException as err:
         log.error(err)
         sys.exit(1)
     if enabled_rule.status_code != 200:
-        log.error("%s rule enablement failed: %s", rule, enabled.rule.text)
+        log.error("%s rule enablement failed: %s", rule.status_code, enabled_rule.text)
     else:
-        log.info("%s rule enabled", rule)
+        log.info("%s rule enabled", rule.json())
 
 
 if __name__ == "__main__":
