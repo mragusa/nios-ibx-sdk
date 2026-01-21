@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# TODO
+# TODO:
 # Automatically downgrade required EA to optional for csv exports
 # Add flag to automate entire migration
 # Update help menu to allow piece meal migration ie user, role, zones
@@ -9,15 +9,15 @@
 # Find way to update data in transit, ie change member, nsgroup, discovery member
 # Determine default view and see if view name needs to be changed
 # Script Process
-# 1. Migrate Extensible extensible attributes
-# 2. Migrate roles, groups, users
-# 3. Migrate network, dns, vlan (static and ranges) views
-# 4, Migrate network containers and networks
-# 5. Migrate DHCP Data
-# 6. Migrate DNS Data
+#   1. Migrate Extensible extensible attributes
+#   2. Migrate roles, groups, users
+#   3. Migrate network, dns, vlan (static and ranges) views
+#   4. Migrate network containers and networks
+#   5. Migrate DHCP Data
+#   6. Migrate DNS Data
 #       - Host records
 #       - Standard Records
-# 7. Compare object counts
+#   7. Compare object counts
 
 
 import getpass
