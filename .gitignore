@@ -1,1 +1,3 @@
 .venv/
+dist/
+nios_ibx_sdk.egg-info/
