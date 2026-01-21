@@ -46,11 +46,14 @@ Admin Documentation: https://docs.infoblox.com/space/nios90/280400764/Infoblox+D
 )
 @optgroup.option("-n", "--name", help="The name for a record in FQDN format")
 @optgroup.option("-i", "--ipv4addr", help="IPv4 Address of the substitute rule")
-@optgroup.option("-a", "--add", is_flag=True, help="Add RPZ A record")
-@optgroup.option("-u", "--update", is_flag=True, help="Update RPZ A record")
-@optgroup.option("-d", "--delete", is_flag=True, help="Delete RPZ A record")
+@optgroup.option("-a", "--add", is_flag=True, default=False, help="Add RPZ A record")
+@optgroup.option(
+    "-u", "--update", is_flag=True, default=False, help="Update RPZ A record"
+)
+@optgroup.option(
+    "-d", "--delete", is_flag=True, default=False, help="Delete RPZ A record"
+)
 @optgroup.group("Optional Parameters")
-@optgroup.option("--use_ttl", is_flag=True, help="Use flag for: ttl")
 @optgroup.option(
     "--ttl",
     type=int,
@@ -60,7 +63,10 @@ Admin Documentation: https://docs.infoblox.com/space/nios90/280400764/Infoblox+D
 @optgroup.option("--zone", help="name of the zone in which the record resides")
 @optgroup.option("--comment", help="comment for the record")
 @optgroup.option(
-    "--disable", is_flag=True, help="Determines if the record is disabled or not"
+    "--disable",
+    is_flag=True,
+    default=False,
+    help="Determines if the record is disabled or not",
 )
 @optgroup.option(
     "-u",
@@ -73,7 +79,9 @@ Admin Documentation: https://docs.infoblox.com/space/nios90/280400764/Infoblox+D
     "-w", "--wapi-ver", default="2.11", show_default=True, help="Infoblox WAPI version"
 )
 @optgroup.group("Logging Parameters")
-@optgroup.option("--debug", is_flag=True, help="enable verbose debug output")
+@optgroup.option(
+    "--debug", is_flag=True, default=False, help="enable verbose debug output"
+)
 def main(
     grid_mgr: str,
     username: str,
@@ -82,12 +90,14 @@ def main(
     rpzone: str,
     name: str,
     ipv4addr: str,
-    use_ttl: bool,
-    ttl: int,
+    ttl: str,
     view: str,
     zone: str,
     comment: str,
     disable: bool,
+    add: bool,
+    delete: bool,
+    update: bool,
 ) -> None:
     if debug:
         increase_log_level()
@@ -96,7 +106,7 @@ def main(
     password = getpass.getpass(f"Enter password for [{username}]: ")
     try:
         wapi.connect(username=username, password=password)
-    except WapiRequest as err:
+    except WapiRequestException as err:
         log.error(err)
         sys.exit(1)
     else:
@@ -113,11 +123,9 @@ def main(
     if comment:
         payload.update({"comment": comment})
     if disable:
-        payload.update({"disable": True})
+        payload.update({"disable": "True"})
     if ttl:
-        payload.update({"ttl": ttl})
-    if use_ttl:
-        payload.update({"use_ttl": True})
+        payload.update({"ttl": ttl, "use_ttl": "True"})
     if view:
         payload.update({"view": view})
     if zone:
@@ -147,17 +155,18 @@ def main(
             rpz_a_record = rpz_a.json()
             if update:
                 try:
-                    update_rpz_a = wapi.put(rpz_a_record["_ref"], json={payload})
+                    update_rpz_a = wapi.put(rpz_a_record["_ref"], json=payload)
                 except WapiRequestException as err:
                     log.error(err)
                     sys.exit(1)
                 if update_rpz_a.status_code != 200:
-                    log.error("RPZ record update failed: %s".update_rpz_a.text)
+                    log.error("RPZ record update failed: %s", update_rpz_a.text)
                 else:
-                    log.info("RPZ record update completed: %s".update_rpz_a.json())
+                    log.info("RPZ record update completed: %s", update_rpz_a.json())
             if delete:
                 try:
                     del_rpz_a = wapi.delete(rpz_a_record["_ref"])
+                    print(del_rpz_a.json())
                 except WapiRequestException as err:
                     log.error(err)
                     sys.exit(1)

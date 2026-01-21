@@ -52,11 +52,14 @@ Admin Documentation: https://docs.infoblox.com/space/nios90/280400764/Infoblox+D
     type=int,
     help="Preference value, 0 to 65535 (inclusive) in 32-bit unsigned integer format.",
 )
-@optgroup.option("-a", "--add", is_flag=True, help="Add RPZ MX record")
-@optgroup.option("-u", "--update", is_flag=True, help="Update RPZ MX record")
-@optgroup.option("-d", "--delete", is_flag=True, help="Delete RPZ MX record")
+@optgroup.option("-a", "--add", is_flag=True, default=False, help="Add RPZ MX record")
+@optgroup.option(
+    "-u", "--update", is_flag=True, default=False, help="Update RPZ MX record"
+)
+@optgroup.option(
+    "-d", "--delete", is_flag=True, default=False, help="Delete RPZ MX record"
+)
 @optgroup.group("Optional Parameters")
-@optgroup.option("--use_ttl", is_flag=True, help="Use flag for: ttl")
 @optgroup.option(
     "--ttl",
     type=int,
@@ -79,7 +82,9 @@ Admin Documentation: https://docs.infoblox.com/space/nios90/280400764/Infoblox+D
     "-w", "--wapi-ver", default="2.11", show_default=True, help="Infoblox WAPI version"
 )
 @optgroup.group("Logging Parameters")
-@optgroup.option("--debug", is_flag=True, help="enable verbose debug output")
+@optgroup.option(
+    "--debug", is_flag=True, default=False, help="enable verbose debug output"
+)
 def main(
     grid_mgr: str,
     username: str,
@@ -87,14 +92,17 @@ def main(
     debug: bool,
     rpzone: str,
     name: str,
+    ipv4addr: str,
     exchanger: str,
-    preference: int,
-    use_ttl: bool,
-    ttl: int,
+    preference: str,
+    ttl: str,
     view: str,
     zone: str,
     comment: str,
     disable: bool,
+    add: bool,
+    delete: bool,
+    update: bool,
 ) -> None:
     if debug:
         increase_log_level()
@@ -103,7 +111,7 @@ def main(
     password = getpass.getpass(f"Enter password for [{username}]: ")
     try:
         wapi.connect(username=username, password=password)
-    except WapiRequest as err:
+    except WapiRequestException as err:
         log.error(err)
         sys.exit(1)
     else:
@@ -116,17 +124,15 @@ def main(
     if rpzone:
         payload.update({"rp_zone": rpzone})
     if ipv4addr:
-        payload.update({"exchanger": mail_exchanger})
+        payload.update({"exchanger": exchanger})
     if preference:
         payload.update({"preference": preference})
     if comment:
         payload.update({"comment": comment})
     if disable:
-        payload.update({"disable": True})
+        payload.update({"disable": "True"})
     if ttl:
-        payload.update({"ttl": ttl})
-    if use_ttl:
-        payload.update({"use_ttl": True})
+        payload.update({"ttl": ttl, "use_ttl": "True"})
     if view:
         payload.update({"view": view})
     if zone:
@@ -149,28 +155,28 @@ def main(
         except WapiRequestException as err:
             log.error(err)
             sys.exit(1)
-        if rpz_a.status_code != 200:
+        if rpz_mx.status_code != 200:
             log.error("RPZ record not found: %s", rpz_mx.text)
         else:
             log.info("RPZ record found: %s", rpz_mx.json())
             rpz_mx_record = rpz_mx.json()
             if update:
                 try:
-                    update_rpz_mx = wapi.put(rpz_mx_record["_ref"], json={payload})
+                    update_rpz_mx = wapi.put(rpz_mx_record["_ref"], json=payload)
                 except WapiRequestException as err:
                     log.error(err)
                     sys.exit(1)
                 if update_rpz_mx.status_code != 200:
-                    log.error("RPZ record update failed: %s".update_rpz_mx.text)
+                    log.error("RPZ record update failed: %s", update_rpz_mx.text)
                 else:
-                    log.info("RPZ record update completed: %s".update_rpz_mx.json())
+                    log.info("RPZ record update completed: %s", update_rpz_mx.json())
             if delete:
                 try:
                     del_rpz_mx = wapi.delete(rpz_mx_record["_ref"])
+                    print(del_rpz_mx.json())
                 except WapiRequestException as err:
                     log.error(err)
                     sys.exit(1)
-
     sys.exit()
 
 

@@ -112,7 +112,7 @@ def main(
     password = getpass.getpass(f"Enter password for [{username}]: ")
     try:
         wapi.connect(username=username, password=password)
-    except WapiRequest as err:
+    except WapiRequestException as err:
         log.error(err)
         sys.exit(1)
     else:
@@ -156,7 +156,11 @@ def main(
             log.error(err)
             sys.exit(1)
         if current_ruleset.status_code != 200:
-            log.error("no adp ruleset found: %s".current_ruleset.text)
+            log.error(
+                "no adp ruleset found:%s %s",
+                current_ruleset.status_code,
+                current_ruleset.text,
+            )
         else:
             active_ruleset = current_ruleset.json()
             log.info("adp ruleset found: %s", active_ruleset[0]["current_ruleset"])
@@ -197,7 +201,7 @@ def main(
                     adp_profile = new_adp_profile.json()
                     log.info("adp profile created: %s %s", profilename, adp_profile)
             else:
-                info.error("profilename not defined")
+                log.error("profilename not defined")
                 sys.exit(1)
     if delete:
         if profilename:

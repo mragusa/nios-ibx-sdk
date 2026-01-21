@@ -49,11 +49,14 @@ Admin Documentation: https://docs.infoblox.com/space/nios90/280400764/Infoblox+D
     "--text",
     help="Text associated with the record. It can contain up to 255 bytes per substring, up to a total of 512 bytes. To enter leading, trailing, or embedded spaces in the text, add quotes around the text to preserve the spaces",
 )
-@optgroup.option("-a", "--add", is_flag=True, help="Add RPZ TXT record")
-@optgroup.option("-u", "--update", is_flag=True, help="Update RPZ TXT record")
-@optgroup.option("-d", "--delete", is_flag=True, help="Delete RPZ TXT record")
+@optgroup.option("-a", "--add", is_flag=True, default=False, help="Add RPZ TXT record")
+@optgroup.option(
+    "-u", "--update", is_flag=True, default=False, help="Update RPZ TXT record"
+)
+@optgroup.option(
+    "-d", "--delete", is_flag=True, default=False, help="Delete RPZ TXT record"
+)
 @optgroup.group("Optional Parameters")
-@optgroup.option("--use_ttl", is_flag=True, help="Use flag for: ttl")
 @optgroup.option(
     "--ttl",
     type=int,
@@ -76,7 +79,9 @@ Admin Documentation: https://docs.infoblox.com/space/nios90/280400764/Infoblox+D
     "-w", "--wapi-ver", default="2.11", show_default=True, help="Infoblox WAPI version"
 )
 @optgroup.group("Logging Parameters")
-@optgroup.option("--debug", is_flag=True, help="enable verbose debug output")
+@optgroup.option(
+    "--debug", is_flag=True, default=False, help="enable verbose debug output"
+)
 def main(
     grid_mgr: str,
     username: str,
@@ -85,12 +90,14 @@ def main(
     rpzone: str,
     name: str,
     text: str,
-    use_ttl: bool,
-    ttl: int,
+    ttl: str,
     view: str,
     zone: str,
     comment: str,
     disable: bool,
+    add: bool,
+    delete: bool,
+    update: bool,
 ) -> None:
     if debug:
         increase_log_level()
@@ -99,7 +106,7 @@ def main(
     password = getpass.getpass(f"Enter password for [{username}]: ")
     try:
         wapi.connect(username=username, password=password)
-    except WapiRequest as err:
+    except WapiRequestException as err:
         log.error(err)
         sys.exit(1)
     else:
@@ -116,11 +123,9 @@ def main(
     if comment:
         payload.update({"comment": comment})
     if disable:
-        payload.update({"disable": True})
+        payload.update({"disable": "True"})
     if ttl:
-        payload.update({"ttl": ttl})
-    if use_ttl:
-        payload.update({"use_ttl": True})
+        payload.update({"ttl": ttl, "use_ttl": "True"})
     if view:
         payload.update({"view": view})
     if zone:
@@ -150,21 +155,20 @@ def main(
             rpz_txt_record = rpz_txt.json()
             if update:
                 try:
-                    update_rpz_txt = wapi.put(rpz_txt_record["_ref"], json={payload})
+                    update_rpz_txt = wapi.put(rpz_txt_record["_ref"], json=payload)
                 except WapiRequestException as err:
                     log.error(err)
                     sys.exit(1)
                 if update_rpz_txt.status_code != 200:
-                    log.error("RPZ record update failed: %s".update_rpz_txt.text)
+                    log.error("RPZ record update failed: %s", update_rpz_txt.text)
                 else:
-                    log.info("RPZ record update completed: %s".update_rpz_txt.json())
+                    log.info("RPZ record update completed: %s", update_rpz_txt.json())
             if delete:
                 try:
                     del_rpz_txt = wapi.delete(rpz_txt_record["_ref"])
                 except WapiRequestException as err:
                     log.error(err)
                     sys.exit(1)
-
     sys.exit()
 
 

@@ -52,7 +52,7 @@ Admin Documentation: https://docs.infoblox.com/space/nios90/280400764/Infoblox+D
 @optgroup.option(
     "-o",
     "--order",
-    type=int,
+    type=str,
     help="The order parameter of the Substitute (NAPTR Record) Rule records. This parameter specifies the order in which the NAPTR rules are applied when multiple rules are present. Valid values are from 0 to 65535 (inclusive), in 32-bit unsigned integer format.",
 )
 @optgroup.option(
@@ -66,9 +66,13 @@ Admin Documentation: https://docs.infoblox.com/space/nios90/280400764/Infoblox+D
     "--replacement",
     help="The replacement field of the Substitute (NAPTR Record) Rule object. For nonterminal NAPTR records, this field specifies the next domain name to look up. This value can be in unicode format.",
 )
-@optgroup.option("-a", "--add", is_flag=True, help="Add RPZ A record")
-@optgroup.option("-u", "--update", is_flag=True, help="Update RPZ A record")
-@optgroup.option("-d", "--delete", is_flag=True, help="Delete RPZ A record")
+@optgroup.option("-a", "--add", is_flag=True, default=False, help="Add RPZ A record")
+@optgroup.option(
+    "-u", "--update", is_flag=True, default=False, help="Update RPZ A record"
+)
+@optgroup.option(
+    "-d", "--delete", is_flag=True, default=False, help="Delete RPZ A record"
+)
 @optgroup.group("Optional Parameters")
 @optgroup.option(
     "--services",
@@ -78,7 +82,6 @@ Admin Documentation: https://docs.infoblox.com/space/nios90/280400764/Infoblox+D
     "--regex",
     help="The regular expression-based rewriting rule of the Substitute (NAPTR Record) Rule record. This should be a POSIX compliant regular expression, including the substitution rule and flags. Refer to RFC 2915 for the field syntax details.",
 )
-@optgroup.option("--use_ttl", is_flag=True, help="Use flag for: ttl")
 @optgroup.option(
     "--ttl",
     type=int,
@@ -88,7 +91,10 @@ Admin Documentation: https://docs.infoblox.com/space/nios90/280400764/Infoblox+D
 @optgroup.option("--zone", help="name of the zone in which the record resides")
 @optgroup.option("--comment", help="comment for the record")
 @optgroup.option(
-    "--disable", is_flag=True, help="Determines if the record is disabled or not"
+    "--disable",
+    is_flag=True,
+    default=False,
+    help="Determines if the record is disabled or not",
 )
 @optgroup.option(
     "-u",
@@ -101,7 +107,9 @@ Admin Documentation: https://docs.infoblox.com/space/nios90/280400764/Infoblox+D
     "-w", "--wapi-ver", default="2.11", show_default=True, help="Infoblox WAPI version"
 )
 @optgroup.group("Logging Parameters")
-@optgroup.option("--debug", is_flag=True, help="enable verbose debug output")
+@optgroup.option(
+    "--debug", is_flag=True, default=False, help="enable verbose debug output"
+)
 def main(
     grid_mgr: str,
     username: str,
@@ -110,17 +118,19 @@ def main(
     rpzone: str,
     name: str,
     flags: str,
-    order: int,
-    preference: int,
+    order: str,
+    preference: str,
     regexp: str,
     replacement: str,
     services: str,
-    use_ttl: bool,
-    ttl: int,
+    ttl: str,
     view: str,
     zone: str,
     comment: str,
     disable: bool,
+    add: bool,
+    delete: bool,
+    update: bool,
 ) -> None:
     if debug:
         increase_log_level()
@@ -129,7 +139,7 @@ def main(
     password = getpass.getpass(f"Enter password for [{username}]: ")
     try:
         wapi.connect(username=username, password=password)
-    except WapiRequest as err:
+    except WapiRequestException as err:
         log.error(err)
         sys.exit(1)
     else:
@@ -145,7 +155,7 @@ def main(
         payload.update({"flags": flags})
     if order:
         payload.update({"order": order})
-    if prefernce:
+    if preference:
         payload.update({"preference": preference})
     if regexp:
         payload.update({"regexp": regexp})
@@ -156,11 +166,9 @@ def main(
     if comment:
         payload.update({"comment": comment})
     if disable:
-        payload.update({"disable": True})
+        payload.update({"disable": "True"})
     if ttl:
-        payload.update({"ttl": ttl})
-    if use_ttl:
-        payload.update({"use_ttl": True})
+        payload.update({"ttl": ttl, "use_ttl": "True"})
     if view:
         payload.update({"view": view})
     if zone:
@@ -190,23 +198,21 @@ def main(
             rpz_naptr_record = rpz_naptr.json()
             if update:
                 try:
-                    update_rpz_naptr = wapi.put(
-                        rpz_naptr_record["_ref"], json={payload}
-                    )
+                    update_rpz_naptr = wapi.put(rpz_naptr_record["_ref"], json=payload)
                 except WapiRequestException as err:
                     log.error(err)
                     sys.exit(1)
                 if update_rpz_naptr.status_code != 200:
-                    log.error("RPZ record update failed: %s".update_rpz_naptr.text)
+                    log.error("RPZ record update failed: %s", update_rpz_naptr.text)
                 else:
-                    log.info("RPZ record update completed: %s".update_rpz_naptr.json())
+                    log.info("RPZ record update completed: %s", update_rpz_naptr.json())
             if delete:
                 try:
                     del_rpz_naptr = wapi.delete(rpz_naptr_record["_ref"])
+                    print(del_rpz_naptr.json())
                 except WapiRequestException as err:
                     log.error(err)
                     sys.exit(1)
-
     sys.exit()
 
 

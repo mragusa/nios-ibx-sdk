@@ -88,12 +88,15 @@ def main(
     rpzone: str,
     name: str,
     canonical: str,
-    use_ttl: bool,
-    ttl: int,
+    ttl: str,
     view: str,
     zone: str,
     comment: str,
     disable: bool,
+    ipv4addr: str,
+    add: bool,
+    update: bool,
+    delete: bool,
 ) -> None:
     if debug:
         increase_log_level()
@@ -102,7 +105,7 @@ def main(
     password = getpass.getpass(f"Enter password for [{username}]: ")
     try:
         wapi.connect(username=username, password=password)
-    except WapiRequest as err:
+    except WapiRequestException as err:
         log.error(err)
         sys.exit(1)
     else:
@@ -119,11 +122,9 @@ def main(
     if comment:
         payload.update({"comment": comment})
     if disable:
-        payload.update({"disable": True})
+        payload.update({"disable": "True"})
     if ttl:
-        payload.update({"ttl": ttl})
-    if use_ttl:
-        payload.update({"use_ttl": True})
+        payload.update({"ttl": ttl, "use_ttl": "True"})
     if view:
         payload.update({"view": view})
     if zone:
@@ -153,19 +154,18 @@ def main(
             rpz_cname_record = rpz_cname.json()
             if update:
                 try:
-                    update_rpz_cname = wapi.put(
-                        rpz_cname_record["_ref"], json={payload}
-                    )
+                    update_rpz_cname = wapi.put(rpz_cname_record["_ref"], json=payload)
                 except WapiRequestException as err:
                     log.error(err)
                     sys.exit(1)
                 if update_rpz_cname.status_code != 200:
-                    log.error("RPZ record update failed: %s".update_rpz_cname.text)
+                    log.error("RPZ record update failed: %s", update_rpz_cname.text)
                 else:
-                    log.info("RPZ record update completed: %s".update_rpz_cname.json())
+                    log.info("RPZ record update completed: %s", update_rpz_cname.json())
             if delete:
                 try:
                     del_rpz_cname = wapi.delete(rpz_cname_record["_ref"])
+                    print(del_rpz_cname.json())
                 except WapiRequestException as err:
                     log.error(err)
                     sys.exit(1)
