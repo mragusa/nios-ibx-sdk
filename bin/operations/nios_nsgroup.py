@@ -137,11 +137,6 @@ def report_nsgroup(grid_mgr, nsgroup):
         box=box.SIMPLE,
     )
     for n in nsgroup:
-        recursion = ""
-        if n["recursion"]:
-            recursion = "[green]True"
-        else:
-            recursion = "[red]False"
         table.add_row(
             n["_ref"],
             n["name"],
