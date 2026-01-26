@@ -72,3 +72,8 @@ dependencies = [
     "xattr==1.3.0",
     "zstandard==0.25.0",
 ]
+
+[dependency-groups]
+dev = [
+    "ty>=0.0.13",
+]
