@@ -50,7 +50,7 @@ def main(grid: str, username: str, reboot: bool, shutdown: bool) -> None:
         s.sendline(command)  # run a command
         s.sendline("y")  # run a command
         s.prompt()  # match the prompt
-        print(s.before.decode())  # print everything before the prompt.
+        print(s.before)  # print everything before the prompt.
         s.logout()
     except pxssh.ExceptionPxssh as e:
         print("pxssh failed on login.")

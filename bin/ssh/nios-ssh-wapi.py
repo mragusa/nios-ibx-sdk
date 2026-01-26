@@ -53,7 +53,7 @@ def main(grid: str, username: str, enable: bool, disable: bool) -> None:
         for wapi in command:
             s.sendline(wapi)  # run a command
         s.prompt()  # match the prompt
-        print(s.before.decode())  # print everything before the prompt.
+        print(s.before)  # print everything before the prompt.
         s.logout()
     except pxssh.ExceptionPxssh as e:
         print("pxssh failed on login.")
