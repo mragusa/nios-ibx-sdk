@@ -100,7 +100,7 @@ def main(
     password = getpass.getpass(f"Enter password for [{username}]: ")
     try:
         wapi.connect(username=username, password=password)
-    except WapiRequest as err:
+    except WapiRequestException as err:
         log.error(err)
         sys.exit(1)
     else:
@@ -131,10 +131,10 @@ def main(
             ptr_record_ref = wapi.getone(
                 "record:ptr", json={"ptrdname": fqdn, "ipv4addr": ip, "view": view}
             )
+            ptr_record_delete = wapi.delete(ptr_record_ref)
         except WapiRequestException as err:
             log.error(err)
             sys.exit(1)
-            ptr_record_delete = wapi.delete(ptr_record_ref)
         if ptr_record_delete.status_code != 200:
             print(f"Record deletion failed {ptr_record_delete.text}")
         else:
@@ -152,11 +152,15 @@ def main(
             updated_rdata = {"ttl": newttl, "ipv4addr": newip}
         if newname:
             updated_rdata = {"ptrdname": newname}
-            ptr_record = wapi.put(ptr_record_ref, json=updated_rdata)
-        if ptr_record.status_code != 200:
-            print(f"Record update failed {ptr_record.text}")
-        else:
-            print(f"Record update successful {ptr_record.json()}")
+            try:
+                ptr_record = wapi.put(ptr_record_ref, json=updated_rdata)
+                if ptr_record.status_code != 200:
+                    print(f"Record update failed {ptr_record.text}")
+                else:
+                    print(f"Record update successful {ptr_record.json()}")
+            except WapiRequestException as err:
+                log.error(err)
+                sys.exit(1)
 
     sys.exit()
 
