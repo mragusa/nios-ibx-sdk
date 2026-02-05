@@ -65,7 +65,7 @@ dependencies = [
     "tomlkit==0.14.0",
     "tqdm==4.67.3",
     "trove-classifiers==2026.1.14.14",
-    "ty==0.0.14",
+    "ty==0.0.15",
     "typing-extensions==4.15.0",
     "typing-inspection==0.4.2",
     "uc-micro-py==1.0.3",

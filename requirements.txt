@@ -57,7 +57,7 @@ syslog-rfc5424-formatter==1.2.3
 tomlkit==0.14.0
 tqdm==4.67.3
 trove-classifiers==2026.1.14.14
-ty==0.0.14
+ty==0.0.15
 typing-inspection==0.4.2
 typing_extensions==4.15.0
 uc-micro-py==1.0.3
