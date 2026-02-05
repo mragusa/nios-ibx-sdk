@@ -655,14 +655,14 @@ requires-dist = [
     { name = "more-itertools", specifier = "==10.8.0" },
     { name = "msgpack", specifier = "==1.1.2" },
     { name = "netaddr", specifier = "==1.3.0" },
-    { name = "packaging", specifier = "==25.0" },
-    { name = "pbs-installer", specifier = "==2026.1.14" },
+    { name = "packaging", specifier = "==26.0" },
+    { name = "pbs-installer", specifier = "==2026.2.3" },
     { name = "pexpect", specifier = "==4.9.0" },
     { name = "pip", specifier = ">=26.0" },
     { name = "pkginfo", specifier = "==1.12.1.2" },
     { name = "platformdirs", specifier = "==4.5.1" },
     { name = "ptyprocess", specifier = "==0.7.0" },
-    { name = "pycparser", specifier = "==2.23" },
+    { name = "pycparser", specifier = "==3.0" },
     { name = "pydantic", specifier = "==2.12.5" },
     { name = "pydantic-core", specifier = "==2.41.5" },
     { name = "pygments", specifier = "==2.19.2" },
@@ -670,15 +670,15 @@ requires-dist = [
     { name = "rapidfuzz", specifier = "==3.14.3" },
     { name = "requests", specifier = "==2.32.5" },
     { name = "requests-toolbelt", specifier = "==1.0.0" },
-    { name = "rich", specifier = "==14.2.0" },
-    { name = "setuptools", specifier = "==80.10.1" },
+    { name = "rich", specifier = "==14.3.2" },
+    { name = "setuptools", specifier = "==80.10.2" },
     { name = "shellingham", specifier = "==1.5.4" },
     { name = "sniffio", specifier = "==1.3.1" },
     { name = "syslog-rfc5424-formatter", specifier = "==1.2.3" },
     { name = "tomlkit", specifier = "==0.14.0" },
-    { name = "tqdm", specifier = "==4.67.1" },
+    { name = "tqdm", specifier = "==4.67.3" },
     { name = "trove-classifiers", specifier = "==2026.1.14.14" },
-    { name = "ty", specifier = ">=0.0.14" },
+    { name = "ty", specifier = "==0.0.14" },
     { name = "typing-extensions", specifier = "==4.15.0" },
     { name = "typing-inspection", specifier = "==0.4.2" },
     { name = "uc-micro-py", specifier = "==1.0.3" },
@@ -693,20 +693,20 @@ dev = [{ name = "ty", specifier = ">=0.0.13" }]
 
 [[package]]
 name = "packaging"
-version = "25.0"
+version = "26.0"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/a1/d4/1fc4078c65507b51b96ca8f8c3ba19e6a61c8253c72794544580a7b6c24d/packaging-25.0.tar.gz", hash = "sha256:d443872c98d677bf60f6a1f2f8c1cb748e8fe762d2bf9d3148b5599295b0fc4f", size = 165727, upload-time = "2025-04-19T11:48:59.673Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/65/ee/299d360cdc32edc7d2cf530f3accf79c4fca01e96ffc950d8a52213bd8e4/packaging-26.0.tar.gz", hash = "sha256:00243ae351a257117b6a241061796684b084ed1c516a08c48a3f7e147a9d80b4", size = 143416, upload-time = "2026-01-21T20:50:39.064Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/20/12/38679034af332785aac8774540895e234f4d07f7545804097de4b666afd8/packaging-25.0-py3-none-any.whl", hash = "sha256:29572ef2b1f17581046b3a2227d5c611fb25ec70ca1ba8554b24b0e69331a484", size = 66469, upload-time = "2025-04-19T11:48:57.875Z" },
+    { url = "https://files.pythonhosted.org/packages/b7/b9/c538f279a4e237a006a2c98387d081e9eb060d203d8ed34467cc0f0b9b53/packaging-26.0-py3-none-any.whl", hash = "sha256:b36f1fef9334a5588b4166f8bcd26a14e521f2b55e6b9de3aaa80d3ff7a37529", size = 74366, upload-time = "2026-01-21T20:50:37.788Z" },
 ]
 
 [[package]]
 name = "pbs-installer"
-version = "2026.1.14"
+version = "2026.2.3"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/07/69/9928b675e8f898e62e08c83f7de6351955bdc1d12bb86012c3bbb156a450/pbs_installer-2026.1.14.tar.gz", hash = "sha256:a668548459ce4a2d05ccd45cac10cb93e1ba10709ecfa7ff3d3b9c129bd243f5", size = 66992, upload-time = "2026-01-15T23:02:25.274Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/c6/ef/2da2ce101104a159a9f2c09341a4724544c4482244edba3e973c646264c7/pbs_installer-2026.2.3.tar.gz", hash = "sha256:1328eacb32b3a5bad59edeff942e16f4083c79e6dea46cdd8b98141b4030a93d", size = 68327, upload-time = "2026-02-04T23:02:21.353Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/28/82/05fe7f648bca173198806903d95c15f8ec0bf1ba76a7a943fead2f55e4c0/pbs_installer-2026.1.14-py3-none-any.whl", hash = "sha256:245c8016bb3d6abcf6f7f39f523be67c085f668f0cd497c427df6b673d8c6cb1", size = 68705, upload-time = "2026-01-15T23:02:24.062Z" },
+    { url = "https://files.pythonhosted.org/packages/37/8a/0170e34ed64a37fd47b80ca26adf6b31e98fe269c306e0e87805be881a31/pbs_installer-2026.2.3-py3-none-any.whl", hash = "sha256:0225254ada5812c34761325edfd9c744317422c2767e434143307da171de0673", size = 70119, upload-time = "2026-02-04T23:02:19.455Z" },
 ]
 
 [[package]]
@@ -759,11 +759,11 @@ wheels = [
 
 [[package]]
 name = "pycparser"
-version = "2.23"
+version = "3.0"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/fe/cf/d2d3b9f5699fb1e4615c8e32ff220203e43b248e1dfcc6736ad9057731ca/pycparser-2.23.tar.gz", hash = "sha256:78816d4f24add8f10a06d6f05b4d424ad9e96cfebf68a4ddc99c65c0720d00c2", size = 173734, upload-time = "2025-09-09T13:23:47.91Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/1b/7d/92392ff7815c21062bea51aa7b87d45576f649f16458d78b7cf94b9ab2e6/pycparser-3.0.tar.gz", hash = "sha256:600f49d217304a5902ac3c37e1281c9fe94e4d0489de643a9504c5cdfdfc6b29", size = 103492, upload-time = "2026-01-21T14:26:51.89Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/a0/e3/59cd50310fc9b59512193629e1984c1f95e5c8ae6e5d8c69532ccc65a7fe/pycparser-2.23-py3-none-any.whl", hash = "sha256:e5c6e8d3fbad53479cab09ac03729e0a9faf2bee3db8208a550daf5af81a5934", size = 118140, upload-time = "2025-09-09T13:23:46.651Z" },
+    { url = "https://files.pythonhosted.org/packages/0c/c3/44f3fbbfa403ea2a7c779186dc20772604442dde72947e7d01069cbe98e3/pycparser-3.0-py3-none-any.whl", hash = "sha256:b727414169a36b7d524c1c3e31839a521725078d7b2ff038656844266160a992", size = 48172, upload-time = "2026-01-21T14:26:50.693Z" },
 ]
 
 [[package]]
@@ -915,15 +915,15 @@ wheels = [
 
 [[package]]
 name = "rich"
-version = "14.2.0"
+version = "14.3.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "markdown-it-py" },
     { name = "pygments" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/fb/d2/8920e102050a0de7bfabeb4c4614a49248cf8d5d7a8d01885fbb24dc767a/rich-14.2.0.tar.gz", hash = "sha256:73ff50c7c0c1c77c8243079283f4edb376f0f6442433aecb8ce7e6d0b92d1fe4", size = 219990, upload-time = "2025-10-09T14:16:53.064Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/74/99/a4cab2acbb884f80e558b0771e97e21e939c5dfb460f488d19df485e8298/rich-14.3.2.tar.gz", hash = "sha256:e712f11c1a562a11843306f5ed999475f09ac31ffb64281f73ab29ffdda8b3b8", size = 230143, upload-time = "2026-02-01T16:20:47.908Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/25/7a/b0178788f8dc6cafce37a212c99565fa1fe7872c70c6c9c1e1a372d9d88f/rich-14.2.0-py3-none-any.whl", hash = "sha256:76bc51fe2e57d2b1be1f96c524b890b816e334ab4c1e45888799bfaab0021edd", size = 243393, upload-time = "2025-10-09T14:16:51.245Z" },
+    { url = "https://files.pythonhosted.org/packages/ef/45/615f5babd880b4bd7d405cc0dc348234c5ffb6ed1ea33e152ede08b2072d/rich-14.3.2-py3-none-any.whl", hash = "sha256:08e67c3e90884651da3239ea668222d19bea7b589149d8014a21c633420dbb69", size = 309963, upload-time = "2026-02-01T16:20:46.078Z" },
 ]
 
 [[package]]
@@ -941,11 +941,11 @@ wheels = [
 
 [[package]]
 name = "setuptools"
-version = "80.10.1"
+version = "80.10.2"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/86/ff/f75651350db3cf2ef767371307eb163f3cc1ac03e16fdf3ac347607f7edb/setuptools-80.10.1.tar.gz", hash = "sha256:bf2e513eb8144c3298a3bd28ab1a5edb739131ec5c22e045ff93cd7f5319703a", size = 1229650, upload-time = "2026-01-21T09:42:03.061Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/76/95/faf61eb8363f26aa7e1d762267a8d602a1b26d4f3a1e758e92cb3cb8b054/setuptools-80.10.2.tar.gz", hash = "sha256:8b0e9d10c784bf7d262c4e5ec5d4ec94127ce206e8738f29a437945fbc219b70", size = 1200343, upload-time = "2026-01-25T22:38:17.252Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/e0/76/f963c61683a39084aa575f98089253e1e852a4417cb8a3a8a422923a5246/setuptools-80.10.1-py3-none-any.whl", hash = "sha256:fc30c51cbcb8199a219c12cc9c281b5925a4978d212f84229c909636d9f6984e", size = 1099859, upload-time = "2026-01-21T09:42:00.688Z" },
+    { url = "https://files.pythonhosted.org/packages/94/b8/f1f62a5e3c0ad2ff1d189590bfa4c46b4f3b6e49cef6f26c6ee4e575394d/setuptools-80.10.2-py3-none-any.whl", hash = "sha256:95b30ddfb717250edb492926c92b5221f7ef3fbcc2b07579bcd4a27da21d0173", size = 1064234, upload-time = "2026-01-25T22:38:15.216Z" },
 ]
 
 [[package]]
@@ -986,14 +986,14 @@ wheels = [
 
 [[package]]
 name = "tqdm"
-version = "4.67.1"
+version = "4.67.3"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "colorama", marker = "sys_platform == 'win32'" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/a8/4b/29b4ef32e036bb34e4ab51796dd745cdba7ed47ad142a9f4a1eb8e0c744d/tqdm-4.67.1.tar.gz", hash = "sha256:f8aef9c52c08c13a65f30ea34f4e5aac3fd1a34959879d7e59e63027286627f2", size = 169737, upload-time = "2024-11-24T20:12:22.481Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/09/a9/6ba95a270c6f1fbcd8dac228323f2777d886cb206987444e4bce66338dd4/tqdm-4.67.3.tar.gz", hash = "sha256:7d825f03f89244ef73f1d4ce193cb1774a8179fd96f31d7e1dcde62092b960bb", size = 169598, upload-time = "2026-02-03T17:35:53.048Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/d0/30/dc54f88dd4a2b5dc8a0279bdd7270e735851848b762aeb1c1184ed1f6b14/tqdm-4.67.1-py3-none-any.whl", hash = "sha256:26445eca388f82e72884e0d580d5464cd801a3ea01e63e5601bdff9ba6a48de2", size = 78540, upload-time = "2024-11-24T20:12:19.698Z" },
+    { url = "https://files.pythonhosted.org/packages/16/e1/3079a9ff9b8e11b846c6ac5c8b5bfb7ff225eee721825310c91b3b50304f/tqdm-4.67.3-py3-none-any.whl", hash = "sha256:ee1e4c0e59148062281c49d80b25b67771a127c85fc9676d3be5f243206826bf", size = 78374, upload-time = "2026-02-03T17:35:50.982Z" },
 ]
 
 [[package]]
