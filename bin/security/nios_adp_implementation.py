@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# TODO: updated process with latest runbook
+# TODO: clean up output
 
 import getpass
 import sys
