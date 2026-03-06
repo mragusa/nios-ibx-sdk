@@ -43,8 +43,8 @@ pkginfo==1.12.1.2
 platformdirs==4.9.2
 ptyprocess==0.7.0
 pycparser==3.0
-pydantic==2.12.5
-pydantic-core==2.42.0
+pydantic
+pydantic-core
 pygments==2.19.2
 pyproject-hooks==1.2.0
 rapidfuzz==3.14.3
