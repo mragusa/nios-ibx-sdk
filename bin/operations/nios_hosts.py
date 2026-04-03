@@ -62,7 +62,11 @@ Infoblox script to create/remove/update NIOS host records
 @optgroup.option("--ipv4", help="IPv4 address for host record")
 @optgroup.group("Host Record Actions")
 @optgroup.option(
-    "-g", "--get", is_flag=True, default=False, help="Get host record information"
+    "-r",
+    "--retrieve",
+    is_flag=True,
+    default=False,
+    help="Retrieve host record information",
 )
 @optgroup.option(
     "-a", "--add", is_flag=True, default=False, help="Add NIOS host record"
@@ -71,7 +75,7 @@ Infoblox script to create/remove/update NIOS host records
     "-d", "--delete", is_flag=True, default=False, help="Delete NIOS host record"
 )
 @optgroup.option(
-    "-u", "--update", is_flag=True, default=False, help="Update NIOS host record"
+    "-m", "--modify", is_flag=True, default=False, help="Modify NIOS host record"
 )
 @optgroup.option(
     "-c",
@@ -80,6 +84,9 @@ Infoblox script to create/remove/update NIOS host records
     default=False,
     help="Convert existing A/PTR/CNAME to Host Record",
 )
+@optgroup.group("Host Record Options")
+@optgroup.option("--ipv4", help="IPv4 Address")
+@optgroup.option("--aliases", help="Host Aliases")
 def main(
     grid_mgr: str,
     username: str,
@@ -89,7 +96,10 @@ def main(
     get: bool,
     add: bool,
     delete: bool,
+    modify: bool,
     convert: bool,
+    ipv4: str,
+    aliases: str,
 ) -> None:
     if debug:
         increase_log_level()
@@ -108,7 +118,12 @@ def main(
         print(f"Connected to Infoblox grid manager {wapi.grid_mgr}")
     if get:
         host = get_host(debug, name)
-        report_host(grid_mgr, host)
+        if host:
+            report_host(grid_mgr, host)
+    if add:
+        new_host = add_host(debug, name, ipv4)
+        if new_host:
+            report_host(grid_mgr, name)
     sys.exit()
 
 
@@ -168,6 +183,28 @@ def report_host(grid_mgr, host):
         )
     console = Console()
     console.print(table)
+
+
+def add_host(debug, name, ipv4):
+    new_host_data = {"name": name, "ipv4addrs": ipv4}
+    # TODO: Add alias functionality
+    try:
+        new_nios_host = wapi.post("record:host", json=new_host_data)
+        if new_nios_host.status_code != 200:
+            if debug:
+                print(
+                    f"{new_nios_host.status_code} {new_nios_host.json().get('code')} {new_nios_host.json().get('text')}"
+                )
+            log.error(
+                f"{new_nios_host.status_code}: {new_nios_host.json().get('code')}: {new_nios_host.json().get('text')}"
+            )
+        else:
+            if debug:
+                log.info(new_nios_host.json())
+            return new_nios_host.json()
+    except WapiRequestException as err:
+        log.error(err)
+        sys.exit(1)
 
 
 if __name__ == "__main__":
