@@ -45,7 +45,7 @@ Build basic record types inside of a lab for testing Grid/API functionality.
     help="Infoblox admin username",
 )
 @optgroup.option(
-    "-w", "--wapi-ver", default="2.11", show_default=True, help="Infoblox WAPI version"
+    "-w", "--wapi-ver", default="2.13", show_default=True, help="Infoblox WAPI version"
 )
 @optgroup.group("Logging Parameters")
 @optgroup.option("--debug", is_flag=True, help="enable verbose debug output")
