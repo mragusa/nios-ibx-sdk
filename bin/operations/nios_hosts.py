@@ -124,6 +124,10 @@ def main(
         new_host = add_host(debug, name, ipv4)
         if new_host:
             report_host(grid_mgr, name)
+    if delete:
+        host_ref = get_host(debug, name)
+        if host_ref:
+            delete_host(debug, name, host_ref["_ref"])
     sys.exit()
 
 
@@ -202,6 +206,24 @@ def add_host(debug, name, ipv4):
             if debug:
                 log.info(new_nios_host.json())
             return new_nios_host.json()
+    except WapiRequestException as err:
+        log.error(err)
+        sys.exit(1)
+
+
+def delete_host(debug, name, ref):
+    try:
+        deleted_host = wapi.delete(ref)
+        if deleted_host.status_code != 200:
+            if debug:
+                print(
+                    f"{deleted_host.status_code} {deleted_host.json().get('code')} {deleted_host.json().get('text')}"
+                )
+            log.error(
+                f"{deleted_host.status_code} {deleted_host.json().get('code')} {deleted_host.json().get('text')}"
+            )
+        else:
+            print(f"{name} successfully deleted")
     except WapiRequestException as err:
         log.error(err)
         sys.exit(1)
