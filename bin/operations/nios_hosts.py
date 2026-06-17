@@ -229,5 +229,17 @@ def delete_host(debug, name, ref):
         sys.exit(1)
 
 
+def modify_host(debug, name, modifier):
+    mod_host = get_host(debug, name)
+    if modifier == "name":
+        print("Updating name")
+    elif modifier == "ipv4":
+        print("Updating ipv4")
+    elif modifier == "aliases":
+        print("Updating aliases")
+    else:
+        print("Modifier not provided")
+
+
 if __name__ == "__main__":
     main()
