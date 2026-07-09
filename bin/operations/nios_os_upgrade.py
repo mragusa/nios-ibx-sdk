@@ -74,19 +74,41 @@ def main(grid_mgr: str, file: str, username: str, wapi_ver: str, debug: bool) ->
         if debug:
             log.info(f"Connected to Infoblox grid manager {wapi.grid_mgr}")
         print(f"Connected to Infoblox grid manager {wapi.grid_mgr}")
-    upgrade_bin_token = wapi.file_upload(file)
-    print(f"Setting upgrade BIN file {file}")
-    wapi.post(
-        "fileop", params={"_function": "set_upgrade_file", "token": upgrade_bin_token}
-    )
-    print(f"Initating upload on {grid_mgr}")
-    wapi.post("grid", params={"_function": "UPLOAD"})
-    print(f"Beginning file distribution on {grid_mgr}")
-    wapi.post("grid", params={"_function": "DISTRIBUTION_START"})
-    print(f"Beginning upgrade test distribution on {grid_mgr}")
-    wapi.post("grid", params={"_function": "UPGRADE_TEST_START"})
-    print(f"Starting upgrade on {grid_mgr}")
-    wapi.post("grid", params={"_function": "UPGRADE"})
+    try:
+        upgrade_bin_token = wapi.file_upload(file)
+        print(f"Setting upgrade BIN file {file}")
+        print(f"File: {file} Token: {upgrade_bin_token}")
+        wapi.post(
+            "fileop",
+            params={"_function": "set_upgrade_file", "token": upgrade_bin_token},
+        )
+    except WapiRequestException as err:
+        log.error(err)
+        sys.exit(1)
+    try:
+        print(f"Initating upload on {grid_mgr}")
+        wapi.post("grid", params={"_function": "UPLOAD"})
+    except WapiRequestException as err:
+        log.error(err)
+        sys.exit(1)
+    try:
+        print(f"Beginning file distribution on {grid_mgr}")
+        wapi.post("grid", params={"_function": "DISTRIBUTION_START"})
+    except WapiRequestException as err:
+        log.error(err)
+        sys.exit(1)
+    try:
+        print(f"Beginning upgrade test distribution on {grid_mgr}")
+        wapi.post("grid", params={"_function": "UPGRADE_TEST_START"})
+    except WapiRequestException as err:
+        log.error(err)
+        sys.exit(1)
+    try:
+        print(f"Starting upgrade on {grid_mgr}")
+        wapi.post("grid", params={"_function": "UPGRADE"})
+    except WapiRequestException as err:
+        log.error(err)
+        sys.exit(1)
     sys.exit()
 
 
