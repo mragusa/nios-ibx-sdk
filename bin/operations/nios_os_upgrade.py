@@ -85,33 +85,33 @@ def main(grid_mgr: str, file: str, username: str, wapi_ver: str, debug: bool) ->
         log.error(err)
         sys.exit(1)
     try:
-        print(f"[green]Initating upload on {grid_mgr}[/]")
+        console.print(f"[green]Initating upload on {grid_mgr}[/]")
         wapi.post("grid", params={"_function": "upgrade", "action": "UPLOAD"})
-        try:
-            print(f"Beginning file distribution on {grid_mgr}")
-            wapi.post(
-                "grid", params={"_function": "upgrade", "action": "DISTRIBUTION_START"}
-            )
-            try:
-                print(f"Beginning upgrade test distribution on {grid_mgr}")
-                wapi.post(
-                    "grid",
-                    params={"_function": "upgrade", "action": "UPGRADE_TEST_START"},
-                )
-                try:
-                    print(f"Starting upgrade on {grid_mgr}")
-                    wapi.post(
-                        "grid", params={"_function": "upgrade", "action": "UPGRADE"}
-                    )
-                except WapiRequestException as err:
-                    log.error(err)
-                    sys.exit(1)
-            except WapiRequestException as err:
-                log.error(err)
-                sys.exit(1)
-        except WapiRequestException as err:
-            log.error(err)
-            sys.exit(1)
+        # try:
+        #   print(f"Beginning file distribution on {grid_mgr}")
+        #   wapi.post(
+        #       "grid", params={"_function": "upgrade", "action": "DISTRIBUTION_START"}
+        #   )
+        #            try:
+        #                print(f"Beginning upgrade test distribution on {grid_mgr}")
+        #                wapi.post(
+        #                    "grid",
+        #                    params={"_function": "upgrade", "action": "UPGRADE_TEST_START"},
+        #                )
+        #                try:
+        #                    print(f"Starting upgrade on {grid_mgr}")
+        #                    wapi.post(
+        #                        "grid", params={"_function": "upgrade", "action": "UPGRADE"}
+        #                    )
+        #                except WapiRequestException as err:
+        #                    log.error(err)
+        #                    sys.exit(1)
+        #            except WapiRequestException as err:
+        #                log.error(err)
+        #                sys.exit(1)
+        # except WapiRequestException as err:
+        #   log.error(err)
+        #   sys.exit(1)
     except WapiRequestException as err:
         log.error(err)
         sys.exit(1)
