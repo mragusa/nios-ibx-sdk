@@ -87,25 +87,29 @@ def main(grid_mgr: str, file: str, username: str, wapi_ver: str, debug: bool) ->
         sys.exit(1)
     try:
         print(f"Initating upload on {grid_mgr}")
-        wapi.post("grid", params={"_function": "UPLOAD"})
+        wapi.post("grid", params={"_function": "upgrade", "action": "UPLOAD"})
     except WapiRequestException as err:
         log.error(err)
         sys.exit(1)
     try:
         print(f"Beginning file distribution on {grid_mgr}")
-        wapi.post("grid", params={"_function": "DISTRIBUTION_START"})
+        wapi.post(
+            "grid", params={"_function": "upgrade", "action": "DISTRIBUTION_START"}
+        )
     except WapiRequestException as err:
         log.error(err)
         sys.exit(1)
     try:
         print(f"Beginning upgrade test distribution on {grid_mgr}")
-        wapi.post("grid", params={"_function": "UPGRADE_TEST_START"})
+        wapi.post(
+            "grid", params={"_function": "upgrade", "action": "UPGRADE_TEST_START"}
+        )
     except WapiRequestException as err:
         log.error(err)
         sys.exit(1)
     try:
         print(f"Starting upgrade on {grid_mgr}")
-        wapi.post("grid", params={"_function": "UPGRADE"})
+        wapi.post("grid", params={"_function": "upgrade", "action": "UPGRADE"})
     except WapiRequestException as err:
         log.error(err)
         sys.exit(1)
