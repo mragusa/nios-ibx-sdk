@@ -86,7 +86,7 @@ def main(grid_mgr: str, file: str, username: str, wapi_ver: str, debug: bool) ->
         sys.exit(1)
     try:
         print(f"[green]Initating upload on {grid_mgr}[/]")
-        wapi.post("fileop", params={"_function": "upgrade", "action": "UPLOAD"})
+        wapi.post("grid", params={"_function": "upgrade", "action": "UPLOAD"})
         try:
             print(f"Beginning file distribution on {grid_mgr}")
             wapi.post(
