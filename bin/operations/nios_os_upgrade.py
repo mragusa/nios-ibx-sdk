@@ -9,8 +9,6 @@ from ibx_sdk.logger.ibx_logger import init_logger, increase_log_level
 from ibx_sdk.nios.exceptions import WapiRequestException
 from ibx_sdk.nios.gift import Gift
 from rich.console import Console
-from rich.table import Column, Table
-from rich import box
 
 log = init_logger(
     logfile_name="wapi.log",
@@ -22,6 +20,7 @@ log = init_logger(
 )
 
 wapi = Gift()
+console = Console()
 
 help_text = """
 Upload NIOS BIN file to Infoblox appliance and initate the file distribution and upgrade
@@ -75,9 +74,9 @@ def main(grid_mgr: str, file: str, username: str, wapi_ver: str, debug: bool) ->
             log.info(f"Connected to Infoblox grid manager {wapi.grid_mgr}")
         print(f"Connected to Infoblox grid manager {wapi.grid_mgr}")
     try:
+        print(f"NIOS Upgrade BIN: {file}")
         upgrade_bin_token = wapi.file_upload(file)
-        print(f"Setting upgrade BIN file {file}")
-        print(f"File: {file} Token: {upgrade_bin_token}")
+        console.print(f"[green]File: {file} Token: {upgrade_bin_token}[/green]")
         wapi.post(
             "fileop",
             params={"_function": "set_upgrade_file", "token": upgrade_bin_token},
@@ -88,28 +87,31 @@ def main(grid_mgr: str, file: str, username: str, wapi_ver: str, debug: bool) ->
     try:
         print(f"Initating upload on {grid_mgr}")
         wapi.post("grid", params={"_function": "upgrade", "action": "UPLOAD"})
-    except WapiRequestException as err:
-        log.error(err)
-        sys.exit(1)
-    try:
-        print(f"Beginning file distribution on {grid_mgr}")
-        wapi.post(
-            "grid", params={"_function": "upgrade", "action": "DISTRIBUTION_START"}
-        )
-    except WapiRequestException as err:
-        log.error(err)
-        sys.exit(1)
-    try:
-        print(f"Beginning upgrade test distribution on {grid_mgr}")
-        wapi.post(
-            "grid", params={"_function": "upgrade", "action": "UPGRADE_TEST_START"}
-        )
-    except WapiRequestException as err:
-        log.error(err)
-        sys.exit(1)
-    try:
-        print(f"Starting upgrade on {grid_mgr}")
-        wapi.post("grid", params={"_function": "upgrade", "action": "UPGRADE"})
+        try:
+            print(f"Beginning file distribution on {grid_mgr}")
+            wapi.post(
+                "grid", params={"_function": "upgrade", "action": "DISTRIBUTION_START"}
+            )
+            try:
+                print(f"Beginning upgrade test distribution on {grid_mgr}")
+                wapi.post(
+                    "grid",
+                    params={"_function": "upgrade", "action": "UPGRADE_TEST_START"},
+                )
+                try:
+                    print(f"Starting upgrade on {grid_mgr}")
+                    wapi.post(
+                        "grid", params={"_function": "upgrade", "action": "UPGRADE"}
+                    )
+                except WapiRequestException as err:
+                    log.error(err)
+                    sys.exit(1)
+            except WapiRequestException as err:
+                log.error(err)
+                sys.exit(1)
+        except WapiRequestException as err:
+            log.error(err)
+            sys.exit(1)
     except WapiRequestException as err:
         log.error(err)
         sys.exit(1)
