@@ -74,9 +74,9 @@ def main(grid_mgr: str, file: str, username: str, wapi_ver: str, debug: bool) ->
             log.info(f"Connected to Infoblox grid manager {wapi.grid_mgr}")
         print(f"Connected to Infoblox grid manager {wapi.grid_mgr}")
     try:
-        print(f"NIOS Upgrade BIN: {file}")
+        console.print(f"[green]NIOS Upgrade BIN: {file}[/]")
         upgrade_bin_token = wapi.file_upload(file)
-        console.print(f"[green]File: {file} Token: {upgrade_bin_token}[/green]")
+        console.print(f"[green]File: {file} \nToken: {upgrade_bin_token}[/]")
         wapi.post(
             "fileop",
             params={"_function": "set_upgrade_file", "token": upgrade_bin_token},
@@ -85,8 +85,8 @@ def main(grid_mgr: str, file: str, username: str, wapi_ver: str, debug: bool) ->
         log.error(err)
         sys.exit(1)
     try:
-        print(f"Initating upload on {grid_mgr}")
-        wapi.post("grid", params={"_function": "upgrade", "action": "UPLOAD"})
+        print(f"[green]Initating upload on {grid_mgr}[/]")
+        wapi.post("fileop", params={"_function": "upgrade", "action": "UPLOAD"})
         try:
             print(f"Beginning file distribution on {grid_mgr}")
             wapi.post(
