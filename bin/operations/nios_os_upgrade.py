@@ -100,7 +100,8 @@ def main(grid_mgr: str, file: str, username: str, wapi_ver: str, debug: bool) ->
         console.print(f"[green]Initating upload on {grid_mgr}[/]")
         wapi.post(
             grid_reference[0]["_ref"],
-            params={"_function": "upgrade", "action": "UPLOAD"},
+            params={"_function": "upgrade"},
+            json={"action": "UPLOAD"},
         )
         # try:
         #   print(f"Beginning file distribution on {grid_mgr}")
