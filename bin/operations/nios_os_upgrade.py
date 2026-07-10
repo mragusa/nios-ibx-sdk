@@ -78,9 +78,10 @@ def main(grid_mgr: str, file: str, username: str, wapi_ver: str, debug: bool) ->
         grid_object = wapi.get("grid")
         if grid_object.status_code != 200:
             console.print("[red] Unable to retrieve grid object[/]")
+            sys.exit(1)
         else:
             grid_reference = grid_object.json()
-            console.print(f"[green]Grid Reference: {grid_reference["_ref"]}[/]")
+            console.print(f"[green]Grid Reference: {grid_reference[0]["_ref"]}[/]")
     except WapiRequestException as err:
         log.error(err)
         sys.exit(1)
@@ -92,14 +93,13 @@ def main(grid_mgr: str, file: str, username: str, wapi_ver: str, debug: bool) ->
             "fileop",
             params={"_function": "set_upgrade_file", "token": upgrade_bin_token},
         )
-        time.sleep(30)
     except WapiRequestException as err:
         log.error(err)
         sys.exit(1)
     try:
         console.print(f"[green]Initating upload on {grid_mgr}[/]")
         wapi.post(
-            grid_reference["_ref"],
+            grid_reference[0]["_ref"],
             params={"_function": "upgrade", "action": "UPLOAD"},
         )
         # try:
