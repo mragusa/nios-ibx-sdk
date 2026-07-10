@@ -4,7 +4,6 @@
 import getpass
 import sys
 import click
-import time
 from click_option_group import optgroup
 from ibx_sdk.logger.ibx_logger import init_logger, increase_log_level
 from ibx_sdk.nios.exceptions import WapiRequestException
@@ -100,8 +99,8 @@ def main(grid_mgr: str, file: str, username: str, wapi_ver: str, debug: bool) ->
         console.print(f"[green]Initating upload on {grid_mgr}[/]")
         wapi.post(
             grid_reference[0]["_ref"],
-            params={"_function": "upgrade"},
             json={"action": "UPLOAD"},
+            params={"_function": "upgrade"},
         )
         # try:
         #   print(f"Beginning file distribution on {grid_mgr}")
