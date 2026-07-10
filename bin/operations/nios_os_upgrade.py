@@ -4,6 +4,7 @@
 import getpass
 import sys
 import click
+import time
 from click_option_group import optgroup
 from ibx_sdk.logger.ibx_logger import init_logger, increase_log_level
 from ibx_sdk.nios.exceptions import WapiRequestException
@@ -74,6 +75,16 @@ def main(grid_mgr: str, file: str, username: str, wapi_ver: str, debug: bool) ->
             log.info(f"Connected to Infoblox grid manager {wapi.grid_mgr}")
         print(f"Connected to Infoblox grid manager {wapi.grid_mgr}")
     try:
+        grid_object = wapi.get("grid")
+        if grid_object.status_code != 200:
+            console.print("[red] Unable to retrieve grid object[/]")
+        else:
+            grid_reference = grid_object.json()
+            console.print(f"[green]Grid Reference: {grid_reference["_ref"]}[/]")
+    except WapiRequestException as err:
+        log.error(err)
+        sys.exit(1)
+    try:
         console.print(f"[green]NIOS Upgrade BIN: {file}[/]")
         upgrade_bin_token = wapi.file_upload(file)
         console.print(f"[green]File: {file} \nToken: {upgrade_bin_token}[/]")
@@ -81,12 +92,16 @@ def main(grid_mgr: str, file: str, username: str, wapi_ver: str, debug: bool) ->
             "fileop",
             params={"_function": "set_upgrade_file", "token": upgrade_bin_token},
         )
+        time.sleep(30)
     except WapiRequestException as err:
         log.error(err)
         sys.exit(1)
     try:
         console.print(f"[green]Initating upload on {grid_mgr}[/]")
-        wapi.post("grid", params={"_function": "upgrade", "action": "UPLOAD"})
+        wapi.post(
+            grid_reference["_ref"],
+            params={"_function": "upgrade", "action": "UPLOAD"},
+        )
         # try:
         #   print(f"Beginning file distribution on {grid_mgr}")
         #   wapi.post(
