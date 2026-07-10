@@ -97,9 +97,10 @@ def main(grid_mgr: str, file: str, username: str, wapi_ver: str, debug: bool) ->
         sys.exit(1)
     try:
         console.print(f"[green]Initating upload on {grid_mgr}[/]")
+        upload_body = {"action": "UPLOAD"}
         wapi.post(
             grid_reference[0]["_ref"],
-            json={"action": "UPLOAD"},
+            json=upload_body,
             params={"_function": "upgrade"},
         )
         # try:
