@@ -64,11 +64,21 @@ def set_grid_upload(wapi, grid_mgr, gridref):
     try:
         console.print(f"[green]Initating upload on {grid_mgr}[/]")
         upload_body = {"action": "UPLOAD"}
-        wapi.post(
+        upload_response = wapi.post(
             gridref,
-            body=upload_body,
+            json=upload_body,
             params={"_function": "upgrade"},
         )
+        if upload_response.status_code != 200:
+            log.error(
+                f"Unable to initiate upload: {upload_response.status_code} {upload_response.code} {upload_response.text}"
+            )
+            console.print(
+                f"[red] Unable to initiate upload: {upload_response.status_code} {upload_response.code} {upload_response.text}[/]"
+            )
+        else:
+            log.info(f"Upload initiated successfully on {grid_mgr}")
+            console.print(f"[green]Upload initiated successfully on {grid_mgr}[/]")
     except WapiRequestException as err:
         log.error(err)
         sys.exit(1)
@@ -78,11 +88,23 @@ def set_grid_distribution(wapi, grid_mgr, gridref):
     try:
         console.print(f"[green]Initating distribution on {grid_mgr}[/]")
         distribution_body = {"action": "DISTRIBUTION_START"}
-        wapi.post(
+        distribution_response = wapi.post(
             gridref,
-            body=distribution_body,
+            json=distribution_body,
             params={"_function": "upgrade"},
         )
+        if distribution_response.status_code != 200:
+            log.error(
+                f"[red]Unable to start distribution {distribution_response.status_code} {distribution_response.code} {distribution_response.text}"
+            )
+            console.print(
+                f"[red]Unable to start distribution {distribution_response.status_code} {distribution_response.code} {distribution_response.text}"
+            )
+        else:
+            log.info(f"Distribution initiated successfully on {grid_mgr}")
+            console.print(
+                f"[green]Distribution initiated successfully on {grid_mgr}[/]"
+            )
     except WapiRequestException as err:
         log.error(err)
         sys.exit(1)
@@ -92,11 +114,23 @@ def set_grid_upgrade_test(wapi, grid_mgr, gridref):
     try:
         console.print(f"[green]Initating upgrade test on {grid_mgr}[/]")
         upgrade_test_body = {"action": "UPGRADE_TEST_START"}
-        wapi.post(
+        upgrade_test_response = wapi.post(
             gridref,
-            body=upgrade_test_body,
+            json=upgrade_test_body,
             params={"_function": "upgrade"},
         )
+        if upgrade_test_response.status_code != 200:
+            log.error(
+                f"Unable to complete upgrade test {upgrade_test_response.status_code} {upgrade_test_response.code} {upgrade_test_response.text}"
+            )
+            console.print(
+                f"[red]Unable to complete upgrade test {upgrade_test_response.status_code} {upgrade_test_response.code} {upgrade_test_response.text}[/]"
+            )
+        else:
+            log.info(f"Upgrade test completed successfully on {grid_mgr}")
+            console.print(
+                f"[green]Upgrade test completed successfully on {grid_mgr}[/]"
+            )
     except WapiRequestException as err:
         log.error(err)
         sys.exit(1)
@@ -106,11 +140,21 @@ def set_grid_upgrade(wapi, grid_mgr, gridref):
     try:
         console.print(f"[green]Initating upgrade on {grid_mgr}[/]")
         upgrade_body = {"action": "UPGRADE"}
-        wapi.post(
+        grid_upgrade_response = wapi.post(
             gridref,
-            body=upgrade_body,
+            json=upgrade_body,
             params={"_function": "upgrade"},
         )
+        if grid_upgrade_response.status_code != 200:
+            log.error(
+                f"Upgrade on {grid_mgr} failed: {grid_upgrade_response.status_code} {grid_upgrade_response.code} {grid_upgrade_response.text}"
+            )
+            console.print(
+                f"[red]Upgrade on {grid_mgr} failed: {grid_upgrade_response.status_code} {grid_upgrade_response.code} {grid_upgrade_response.text}[/]"
+            )
+        else:
+            log.info(f"Upgrade initiated successfully on {grid_mgr}")
+            console.print(f"[green]Upgrade initiated successfully on {grid_mgr}[/]")
     except WapiRequestException as err:
         log.error(err)
         sys.exit(1)
