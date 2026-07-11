@@ -178,7 +178,7 @@ def set_grid_upgrade(wapi, grid_mgr, gridref):
 @optgroup.option(
     "-w",
     "--wapi-ver",
-    default="2.12.3",
+    default="2.13.7",
     show_default=True,
     help="Infoblox WAPI version",
 )
