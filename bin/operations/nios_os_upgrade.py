@@ -27,6 +27,95 @@ Upload NIOS BIN file to Infoblox appliance and initate the file distribution and
 """
 
 
+def get_grid_reference(wapi):
+    try:
+        grid_object = wapi.get("grid")
+        if grid_object.status_code != 200:
+            console.print("[red] Unable to retrieve grid object[/]")
+            sys.exit(1)
+        else:
+            grid_reference = grid_object.json()
+            console.print(f"[green]Grid Reference: {grid_reference[0]["_ref"]}[/]")
+            return grid_reference[0]["_ref"]
+    except WapiRequestException as err:
+        log.error(err)
+        sys.exit(1)
+
+
+def upload_bin_file(wapi, file):
+    try:
+        console.print(f"[green]NIOS Upgrade BIN: {file}[/]")
+        upgrade_bin_token = wapi.file_upload(file)
+        console.print(f"[green]File: {file} \nToken: {upgrade_bin_token}[/]")
+        upload_status = wapi.post(
+            "fileop",
+            params={"_function": "set_upgrade_file", "token": upgrade_bin_token},
+        )
+        if upload_status.status_code != 200:
+            console.print("[red] Unable to upload BIN file[/]")
+        else:
+            console.print("[green]Upgrade file set correctly[/]")
+    except WapiRequestException as err:
+        log.error(err)
+        sys.exit(1)
+
+
+def set_grid_upload(wapi, grid_mgr, gridref):
+    try:
+        console.print(f"[green]Initating upload on {grid_mgr}[/]")
+        upload_body = {"action": "UPLOAD"}
+        wapi.post(
+            gridref,
+            body=upload_body,
+            params={"_function": "upgrade"},
+        )
+    except WapiRequestException as err:
+        log.error(err)
+        sys.exit(1)
+
+
+def set_grid_distribution(wapi, grid_mgr, gridref):
+    try:
+        console.print(f"[green]Initating distribution on {grid_mgr}[/]")
+        distribution_body = {"action": "DISTRIBUTION_START"}
+        wapi.post(
+            gridref,
+            body=distribution_body,
+            params={"_function": "upgrade"},
+        )
+    except WapiRequestException as err:
+        log.error(err)
+        sys.exit(1)
+
+
+def set_grid_upgrade_test(wapi, grid_mgr, gridref):
+    try:
+        console.print(f"[green]Initating upgrade test on {grid_mgr}[/]")
+        upgrade_test_body = {"action": "UPGRADE_TEST_START"}
+        wapi.post(
+            gridref,
+            body=upgrade_test_body,
+            params={"_function": "upgrade"},
+        )
+    except WapiRequestException as err:
+        log.error(err)
+        sys.exit(1)
+
+
+def set_grid_upgrade(wapi, grid_mgr, gridref):
+    try:
+        console.print(f"[green]Initating upgrade on {grid_mgr}[/]")
+        upgrade_body = {"action": "UPGRADE"}
+        wapi.post(
+            gridref,
+            body=upgrade_body,
+            params={"_function": "upgrade"},
+        )
+    except WapiRequestException as err:
+        log.error(err)
+        sys.exit(1)
+
+
 @click.command(
     help=help_text,
     context_settings=dict(max_content_width=95, help_option_names=["-h", "--help"]),
@@ -73,64 +162,9 @@ def main(grid_mgr: str, file: str, username: str, wapi_ver: str, debug: bool) ->
         if debug:
             log.info(f"Connected to Infoblox grid manager {wapi.grid_mgr}")
         print(f"Connected to Infoblox grid manager {wapi.grid_mgr}")
-    try:
-        grid_object = wapi.get("grid")
-        if grid_object.status_code != 200:
-            console.print("[red] Unable to retrieve grid object[/]")
-            sys.exit(1)
-        else:
-            grid_reference = grid_object.json()
-            console.print(f"[green]Grid Reference: {grid_reference[0]["_ref"]}[/]")
-    except WapiRequestException as err:
-        log.error(err)
-        sys.exit(1)
-    try:
-        console.print(f"[green]NIOS Upgrade BIN: {file}[/]")
-        upgrade_bin_token = wapi.file_upload(file)
-        console.print(f"[green]File: {file} \nToken: {upgrade_bin_token}[/]")
-        wapi.post(
-            "fileop",
-            params={"_function": "set_upgrade_file", "token": upgrade_bin_token},
-        )
-    except WapiRequestException as err:
-        log.error(err)
-        sys.exit(1)
-    try:
-        console.print(f"[green]Initating upload on {grid_mgr}[/]")
-        upload_body = {"action": "UPLOAD"}
-        wapi.post(
-            grid_reference[0]["_ref"],
-            json=upload_body,
-            params={"_function": "upgrade"},
-        )
-        # try:
-        #   print(f"Beginning file distribution on {grid_mgr}")
-        #   wapi.post(
-        #       "grid", params={"_function": "upgrade", "action": "DISTRIBUTION_START"}
-        #   )
-        #            try:
-        #                print(f"Beginning upgrade test distribution on {grid_mgr}")
-        #                wapi.post(
-        #                    "grid",
-        #                    params={"_function": "upgrade", "action": "UPGRADE_TEST_START"},
-        #                )
-        #                try:
-        #                    print(f"Starting upgrade on {grid_mgr}")
-        #                    wapi.post(
-        #                        "grid", params={"_function": "upgrade", "action": "UPGRADE"}
-        #                    )
-        #                except WapiRequestException as err:
-        #                    log.error(err)
-        #                    sys.exit(1)
-        #            except WapiRequestException as err:
-        #                log.error(err)
-        #                sys.exit(1)
-        # except WapiRequestException as err:
-        #   log.error(err)
-        #   sys.exit(1)
-    except WapiRequestException as err:
-        log.error(err)
-        sys.exit(1)
+    reference = get_grid_reference(wapi)
+    upload_bin_file(wapi, file)
+    set_grid_upload(wapi, grid_mgr, reference)
     sys.exit()
 
 
