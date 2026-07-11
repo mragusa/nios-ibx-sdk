@@ -71,10 +71,10 @@ def set_grid_upload(wapi, grid_mgr, gridref):
         )
         if upload_response.status_code != 200:
             log.error(
-                f"Unable to initiate upload: {upload_response.status_code} {upload_response.code} {upload_response.text}"
+                f"Unable to initiate upload: {upload_response.status_code} {upload_response.json().get('code')} {upload_response.json().get('text')}"
             )
             console.print(
-                f"[red] Unable to initiate upload: {upload_response.status_code} {upload_response.code} {upload_response.text}[/]"
+                f"[red] Unable to initiate upload: {upload_response.status_code} {upload_response.json().get('code')} {upload_response.json().get('text')}[/]"
             )
         else:
             log.info(f"Upload initiated successfully on {grid_mgr}")
@@ -95,10 +95,10 @@ def set_grid_distribution(wapi, grid_mgr, gridref):
         )
         if distribution_response.status_code != 200:
             log.error(
-                f"[red]Unable to start distribution {distribution_response.status_code} {distribution_response.code} {distribution_response.text}"
+                f"[red]Unable to start distribution {distribution_response.status_code} {distribution_response.json().get('code')} {distribution_response.json().get('text')}"
             )
             console.print(
-                f"[red]Unable to start distribution {distribution_response.status_code} {distribution_response.code} {distribution_response.text}"
+                f"[red]Unable to start distribution {distribution_response.status_code} {distribution_response.json().get('code')} {distribution_response.json().get('text')}"
             )
         else:
             log.info(f"Distribution initiated successfully on {grid_mgr}")
@@ -121,10 +121,10 @@ def set_grid_upgrade_test(wapi, grid_mgr, gridref):
         )
         if upgrade_test_response.status_code != 200:
             log.error(
-                f"Unable to complete upgrade test {upgrade_test_response.status_code} {upgrade_test_response.code} {upgrade_test_response.text}"
+                f"Unable to complete upgrade test {upgrade_test_response.status_code} {upgrade_test_response.json().get('code')} {upgrade_test_response.json().get('text')}"
             )
             console.print(
-                f"[red]Unable to complete upgrade test {upgrade_test_response.status_code} {upgrade_test_response.code} {upgrade_test_response.text}[/]"
+                f"[red]Unable to complete upgrade test {upgrade_test_response.status_code} {upgrade_test_response.json().get('code')} {upgrade_test_response.json().get('text')}[/]"
             )
         else:
             log.info(f"Upgrade test completed successfully on {grid_mgr}")
@@ -147,10 +147,10 @@ def set_grid_upgrade(wapi, grid_mgr, gridref):
         )
         if grid_upgrade_response.status_code != 200:
             log.error(
-                f"Upgrade on {grid_mgr} failed: {grid_upgrade_response.status_code} {grid_upgrade_response.code} {grid_upgrade_response.text}"
+                f"Upgrade on {grid_mgr} failed: {grid_upgrade_response.status_code} {grid_upgrade_response.json().get('code')} {grid_upgrade_response.json().get('text')}"
             )
             console.print(
-                f"[red]Upgrade on {grid_mgr} failed: {grid_upgrade_response.status_code} {grid_upgrade_response.code} {grid_upgrade_response.text}[/]"
+                f"[red]Upgrade on {grid_mgr} failed: {grid_upgrade_response.status_code} {grid_upgrade_response.json().get('code')} {grid_upgrade_response.json().get('text')}[/]"
             )
         else:
             log.info(f"Upgrade initiated successfully on {grid_mgr}")
