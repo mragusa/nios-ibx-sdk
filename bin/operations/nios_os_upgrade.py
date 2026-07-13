@@ -49,7 +49,8 @@ def upload_bin_file(wapi, file):
         console.print(f"[green]File: {file} \nToken: {upgrade_bin_token}[/]")
         upload_status = wapi.post(
             "fileop",
-            params={"_function": "set_upgrade_file", "token": upgrade_bin_token},
+            json={"token": upgrade_bin_token},
+            params={"_function": "set_upgrade_file"},
         )
         if upload_status.status_code != 200:
             console.print("[red] Unable to upload BIN file[/]")
@@ -63,10 +64,9 @@ def upload_bin_file(wapi, file):
 def set_grid_upload(wapi, grid_mgr, gridref):
     try:
         console.print(f"[green]Initating upload on {grid_mgr}[/]")
-        upload_body = {"action": "UPLOAD"}
         upload_response = wapi.post(
             gridref,
-            json=upload_body,
+            json={"action": "UPLOAD"},
             params={"_function": "upgrade"},
         )
         if upload_response.status_code != 200:
