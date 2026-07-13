@@ -61,17 +61,22 @@ def get_grid_reference(wapi):
 def upload_bin_file(wapi, file):
     try:
         console.print(f"[green]NIOS Upgrade BIN: {file}[/]")
-        upgrade_bin_token = wapi.file_upload(file)
-        console.print(f"[green]File: {file} \nToken: {upgrade_bin_token}[/]")
-        upload_status = wapi.post(
-            "fileop",
-            json={"token": upgrade_bin_token},
-            params={"_function": "set_upgrade_file"},
-        )
-        if upload_status.status_code != 200:
-            console.print("[red] Unable to upload BIN file[/]")
+        upgrade_bin_token = wapi.post("fileop", params={"file": file})
+        if upgrade_bin_token.status_code != 200:
+            console.print(
+                f"[red] Unable to upload BIN file: {upgrade_bin_token.status_code} {upgrade_bin_token.json().get('code')} {upgrade_bin_token.json().get('text')}[/]"
+            )
         else:
-            console.print("[green]Upgrade file set correctly[/]")
+            console.print(f"[green]File: {file} \nToken: {upgrade_bin_token}[/]")
+            upload_status = wapi.post(
+                "fileop",
+                json={"token": upgrade_bin_token},
+                params={"_function": "set_upgrade_file"},
+            )
+            if upload_status.status_code != 200:
+                console.print("[red] Unable to upload BIN file[/]")
+            else:
+                console.print("[green]Upgrade file set correctly[/]")
     except WapiRequestException as err:
         log.error(err)
         sys.exit(1)
