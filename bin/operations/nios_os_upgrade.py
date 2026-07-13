@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# TODO: Add downgrade/revert functions
 
 
 import getpass
@@ -21,9 +22,24 @@ log = init_logger(
 
 wapi = Gift()
 console = Console()
+upgrade_actions = {
+    "upgrade": {"action": "UPGRADE"},
+    "upgrade_pause": {"action": "UPGRADE_PAUSE"},
+    "upgrade_resume": {"action": "UPLOAD_RESUME"},
+    "distibution_pause": {"action": "DISTRIBUTION_PAUSE"},
+    "distribution_resume": {"action": "DISTRIBUTION_RESUME"},
+    "distribution_start": {"action": "DISTRIBUTION_START"},
+    "distribution_stop": {"action": "DISTRIBUTION_STOP"},
+    # "downgrade": {"action": "DOWNGRADE"},
+    # "revert": {"action": "REVERT"},
+    "upload": {"action": "UPLOAD"},
+    "upgrade_test_start": {"action": "UPGRADE_TEST_START"},
+    "upgrade_test_stop": {"action": "UPGRADE_TEST_STOP"},
+}
+
 
 help_text = """
-Upload NIOS BIN file to Infoblox appliance and initate the file distribution and upgrade
+Upload NIOS BIN file to Infoblox appliance and initate upgrade process 
 """
 
 
@@ -66,7 +82,7 @@ def set_grid_upload(wapi, grid_mgr, gridref):
         console.print(f"[green]Initating upload on {grid_mgr}[/]")
         upload_response = wapi.post(
             gridref,
-            json={"action": "UPLOAD"},
+            json=upgrade_actions["upload"],
             params={"_function": "upgrade"},
         )
         if upload_response.status_code != 200:
@@ -84,74 +100,24 @@ def set_grid_upload(wapi, grid_mgr, gridref):
         sys.exit(1)
 
 
-def set_grid_distribution(wapi, grid_mgr, gridref):
+def set_grid_action(wapi, grid_mgr, gridref, action):
     try:
-        console.print(f"[green]Initating distribution on {grid_mgr}[/]")
-        distribution_response = wapi.post(
+        console.print(f"[green]Initating {action} on {grid_mgr}[/]")
+        action_response = wapi.post(
             gridref,
-            json={"action": "DISTRIBUTION_START"},
+            json=upgrade_actions[action],
             params={"_function": "upgrade"},
         )
-        if distribution_response.status_code != 200:
+        if action_response.status_code != 200:
             log.error(
-                f"[red]Unable to start distribution {distribution_response.status_code} {distribution_response.json().get('code')} {distribution_response.json().get('text')}"
+                f"Unable to {action} {action_response.status_code} {action_response.json().get('code')} {action_response.json().get('text')}"
             )
             console.print(
-                f"[red]Unable to start distribution {distribution_response.status_code} {distribution_response.json().get('code')} {distribution_response.json().get('text')}"
+                f"[red]Unable to {action} {action_response.status_code} {action_response.json().get('code')} {action_response.json().get('text')}"
             )
         else:
-            log.info(f"Distribution initiated successfully on {grid_mgr}")
-            console.print(
-                f"[green]Distribution initiated successfully on {grid_mgr}[/]"
-            )
-    except WapiRequestException as err:
-        log.error(err)
-        sys.exit(1)
-
-
-def set_grid_upgrade_test(wapi, grid_mgr, gridref):
-    try:
-        console.print(f"[green]Initating upgrade test on {grid_mgr}[/]")
-        upgrade_test_response = wapi.post(
-            gridref,
-            json={"action": "UPGRADE_TEST_START"},
-            params={"_function": "upgrade"},
-        )
-        if upgrade_test_response.status_code != 200:
-            log.error(
-                f"Unable to complete upgrade test {upgrade_test_response.status_code} {upgrade_test_response.json().get('code')} {upgrade_test_response.json().get('text')}"
-            )
-            console.print(
-                f"[red]Unable to complete upgrade test {upgrade_test_response.status_code} {upgrade_test_response.json().get('code')} {upgrade_test_response.json().get('text')}[/]"
-            )
-        else:
-            log.info(f"Upgrade test completed successfully on {grid_mgr}")
-            console.print(
-                f"[green]Upgrade test completed successfully on {grid_mgr}[/]"
-            )
-    except WapiRequestException as err:
-        log.error(err)
-        sys.exit(1)
-
-
-def set_grid_upgrade(wapi, grid_mgr, gridref):
-    try:
-        console.print(f"[green]Initating upgrade on {grid_mgr}[/]")
-        grid_upgrade_response = wapi.post(
-            gridref,
-            json={"action": "UPGRADE"},
-            params={"_function": "upgrade"},
-        )
-        if grid_upgrade_response.status_code != 200:
-            log.error(
-                f"Upgrade on {grid_mgr} failed: {grid_upgrade_response.status_code} {grid_upgrade_response.json().get('code')} {grid_upgrade_response.json().get('text')}"
-            )
-            console.print(
-                f"[red]Upgrade on {grid_mgr} failed: {grid_upgrade_response.status_code} {grid_upgrade_response.json().get('code')} {grid_upgrade_response.json().get('text')}[/]"
-            )
-        else:
-            log.info(f"Upgrade initiated successfully on {grid_mgr}")
-            console.print(f"[green]Upgrade initiated successfully on {grid_mgr}[/]")
+            log.info(f"{action} successful on {grid_mgr}")
+            console.print(f"[green]{action} successful on {grid_mgr}[/]")
     except WapiRequestException as err:
         log.error(err)
         sys.exit(1)
@@ -187,7 +153,31 @@ def set_grid_upgrade(wapi, grid_mgr, gridref):
     show_default=True,
     help="enable verbose debug output",
 )
-def main(grid_mgr: str, file: str, username: str, wapi_ver: str, debug: bool) -> None:
+@optgroup.group("NIOS Upgrade Actions")
+@optgroup.option(
+    "-a",
+    "--action",
+    type=click.Choice(
+        [
+            "upgrade",
+            "upgrade_pause",
+            "upgrade_resume",
+            "distribution_pause",
+            "distribution_resume",
+            "distribution_start",
+            "distribution_stop",
+            "downgrade",
+            "revert",
+            "upload",
+            "upgrade_test_start",
+            "upgrade_test_stop",
+        ]
+    ),
+    help="NIOS Upgrade Actions",
+)
+def main(
+    grid_mgr: str, file: str, username: str, wapi_ver: str, debug: bool, action: list
+) -> None:
     if debug:
         increase_log_level()
     wapi.grid_mgr = grid_mgr
@@ -203,9 +193,13 @@ def main(grid_mgr: str, file: str, username: str, wapi_ver: str, debug: bool) ->
         if debug:
             log.info(f"Connected to Infoblox grid manager {wapi.grid_mgr}")
         print(f"Connected to Infoblox grid manager {wapi.grid_mgr}")
+    # Assign file and upload to grid
     reference = get_grid_reference(wapi)
-    upload_bin_file(wapi, file)
-    set_grid_upload(wapi, grid_mgr, reference)
+    upload_bin_file(wapi=wapi, file=file)
+    set_grid_upload(wapi=wapi, grid_mgr=grid_mgr, gridref=reference)
+    # Assign action to begin upgrade process
+    if action:
+        set_grid_action(wapi=wapi, grid_mgr=grid_mgr, gridref=reference, action=action)
     sys.exit()
 
 
