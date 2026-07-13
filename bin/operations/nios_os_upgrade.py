@@ -69,10 +69,12 @@ def upload_bin_file(wapi, file):
                 f"[red] Unable to upload BIN file: {upgrade_bin_token.status_code} {upgrade_bin_token.json().get('code')} {upgrade_bin_token.json().get('text')}[/]"
             )
         else:
-            console.print(f"[green]File: {file} \nToken: {upgrade_bin_token}[/]")
+            console.print(
+                f"[green]File: {file} \nToken: {upgrade_bin_token.json().get("token")}[/]"
+            )
             upload_status = wapi.post(
                 "fileop",
-                json={"token": upgrade_bin_token},
+                json={"token": upgrade_bin_token.json().get("token")},
                 params={"_function": "set_upgrade_file"},
             )
             if upload_status.status_code != 200:
