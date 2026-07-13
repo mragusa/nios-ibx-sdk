@@ -87,10 +87,9 @@ def set_grid_upload(wapi, grid_mgr, gridref):
 def set_grid_distribution(wapi, grid_mgr, gridref):
     try:
         console.print(f"[green]Initating distribution on {grid_mgr}[/]")
-        distribution_body = {"action": "DISTRIBUTION_START"}
         distribution_response = wapi.post(
             gridref,
-            json=distribution_body,
+            json={"action": "DISTRIBUTION_START"},
             params={"_function": "upgrade"},
         )
         if distribution_response.status_code != 200:
@@ -113,10 +112,9 @@ def set_grid_distribution(wapi, grid_mgr, gridref):
 def set_grid_upgrade_test(wapi, grid_mgr, gridref):
     try:
         console.print(f"[green]Initating upgrade test on {grid_mgr}[/]")
-        upgrade_test_body = {"action": "UPGRADE_TEST_START"}
         upgrade_test_response = wapi.post(
             gridref,
-            json=upgrade_test_body,
+            json={"action": "UPGRADE_TEST_START"},
             params={"_function": "upgrade"},
         )
         if upgrade_test_response.status_code != 200:
@@ -139,10 +137,9 @@ def set_grid_upgrade_test(wapi, grid_mgr, gridref):
 def set_grid_upgrade(wapi, grid_mgr, gridref):
     try:
         console.print(f"[green]Initating upgrade on {grid_mgr}[/]")
-        upgrade_body = {"action": "UPGRADE"}
         grid_upgrade_response = wapi.post(
             gridref,
-            json=upgrade_body,
+            json={"action": "UPGRADE"},
             params={"_function": "upgrade"},
         )
         if grid_upgrade_response.status_code != 200:
