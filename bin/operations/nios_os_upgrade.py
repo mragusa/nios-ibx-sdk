@@ -72,15 +72,21 @@ def upload_bin_file(wapi, file):
             console.print(
                 f"[green]File: {file} \nToken: {upgrade_bin_token.json().get("token")}[/]"
             )
-            upload_status = wapi.post(
-                "fileop",
-                json={"token": upgrade_bin_token.json().get("token")},
-                params={"_function": "set_upgrade_file"},
+            upload_response = wapi.post(
+                upgrade_bin_token.json().get("url"), files={"file": open(file, "rb")}
             )
-            if upload_status.status_code != 200:
-                console.print("[red] Unable to upload BIN file[/]")
+            if upload_response.status_code != 200:
+                console.print("Failed")
             else:
-                console.print("[green]Upgrade file set correctly[/]")
+                upload_status = wapi.post(
+                    "fileop",
+                    json={"token": upgrade_bin_token.json().get("token")},
+                    params={"_function": "set_upgrade_file"},
+                )
+                if upload_status.status_code != 200:
+                    console.print("[red] Unable to upload BIN file[/]")
+                else:
+                    console.print("[green]Upgrade file set correctly[/]")
     except WapiRequestException as err:
         log.error(err)
         sys.exit(1)
