@@ -22,10 +22,56 @@ log = init_logger(
 )
 
 wapi = Gift()
+console = Console()
 
 help_text = """
 Basic Infoblox script using to retrieve DNS views from Infoblox grid
 """
+
+
+def get_view(debug):
+    try:
+        # Retrieve dns view from Infoblox appliance
+        dns_view = wapi.get(
+            "view",
+            params={
+                "_max_results": 5000,
+                "_return_fields": ["name", "comment", "recursion"],
+            },
+        )
+        if dns_view.status_code != 200:
+            if debug:
+                print(
+                    f"{dns_view.status_code}: {dns_view.json().get('code')}: {dns_view.json().get('text')}"
+                )
+            log.error(
+                f"{dns_view.status_code}: {dns_view.json().get('code')}: {dns_view.json().get('text')}"
+            )
+        else:
+            if debug:
+                log.info(dns_view.json())
+            return dns_view.json()
+    except WapiRequestException as err:
+        log.error(err)
+        sys.exit(1)
+
+
+def report_view(grid_mgr, view):
+    table = Table(
+        Column(header="Reference", justify="center"),
+        Column(header="Name", justify="center"),
+        Column(header="Recursion", justify="center"),
+        title=f"Infoblox Grid: {grid_mgr} DNS Views",
+        box=box.SIMPLE,
+    )
+    for v in view:
+        recursion = ""
+        if v["recursion"]:
+            recursion = "[green]True"
+        else:
+            recursion = "[red]False"
+        table.add_row(v["_ref"], v["name"], recursion)
+    console.print(table)
 
 
 @click.command(
@@ -76,52 +122,6 @@ def main(grid_mgr: str, username: str, wapi_ver: str, debug: bool) -> None:
     views = get_view(debug)
     report_view(grid_mgr, views)
     sys.exit()
-
-
-def get_view(debug):
-    try:
-        # Retrieve dns view from Infoblox appliance
-        dns_view = wapi.get(
-            "view",
-            params={
-                "_max_results": 5000,
-                "_return_fields": ["name", "comment", "recursion"],
-            },
-        )
-        if dns_view.status_code != 200:
-            if debug:
-                print(
-                    f"{dns_view.status_code}: {dns_view.json().get('code')}: {dns_view.json().get('text')}"
-                )
-            log.error(
-                f"{dns_view.status_code}: {dns_view.json().get('code')}: {dns_view.json().get('text')}"
-            )
-        else:
-            if debug:
-                log.info(dns_view.json())
-            return dns_view.json()
-    except WapiRequestException as err:
-        log.error(err)
-        sys.exit(1)
-
-
-def report_view(grid_mgr, view):
-    table = Table(
-        Column(header="Reference", justify="center"),
-        Column(header="Name", justify="center"),
-        Column(header="Recursion", justify="center"),
-        title=f"Infoblox Grid: {grid_mgr} DNS Views",
-        box=box.SIMPLE,
-    )
-    for v in view:
-        recursion = ""
-        if v["recursion"]:
-            recursion = "[green]True"
-        else:
-            recursion = "[red]False"
-        table.add_row(v["_ref"], v["name"], recursion)
-    console = Console()
-    console.print(table)
 
 
 if __name__ == "__main__":
