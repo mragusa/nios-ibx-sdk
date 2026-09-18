@@ -91,7 +91,7 @@ def report_view(grid_mgr, view):
 @optgroup.option(
     "-w",
     "--wapi-ver",
-    default="2.12.3",
+    default="2.13.7",
     show_default=True,
     help="Infoblox WAPI version",
 )
