@@ -1,10 +1,13 @@
 #!/usr/bin/env python3
+# TODO: Add additional debug output
+# TODO: Improve console output
 
 
 import getpass
 import sys
 import click
 from click_option_group import optgroup
+import json
 from ibx_sdk.logger.ibx_logger import init_logger, increase_log_level
 from ibx_sdk.nios.exceptions import WapiRequestException
 from ibx_sdk.nios.gift import Gift
@@ -15,7 +18,7 @@ from rich import box
 log = init_logger(
     logfile_name="wapi.log",
     logfile_mode="a",
-    console_log=True,
+    console_log=False,
     level="info",
     max_size=100000,
     num_logs=1,
@@ -31,7 +34,7 @@ Script to get/add/delete/update extensible attributes on NIOS Network Objects
 
 def get_networks(debug, count, filter):
     try:
-        # Retrieve dns view from Infoblox appliance
+        # Retrieve networks from Infoblox appliance
         if filter:
             networks = wapi.get(
                 "network",
@@ -90,6 +93,31 @@ def report_networks(grid_mgr, networks):
     console.print(table)
 
 
+def add_network_ea(filter, extattr):
+    ea = {}
+    nios_ea = dict(extattr)
+    for e in nios_ea:
+        ea[e] = {"value": nios_ea[e]}
+    network = wapi.get(
+        "network",
+        params={
+            "ipv4addr": filter,
+            "_return_fields": ["ipv4addr", "comment", "extattrs"],
+        },
+    )
+    if network.status_code != 200:
+        print(network.status_code, network.text)
+    else:
+        nios_network = network.json()
+        extattr_status = wapi.put(
+            nios_network[0]["_ref"], data=json.dumps({"extattrs+": ea})
+        )
+        if extattr_status.status_code != 200:
+            print(f"Error: {extattr_status.status_code} {extattr_status.text}")
+        else:
+            print(f"Extensible Attribute Applied: {extattr_status.json()}")
+
+
 @click.command(
     help=help_text,
     context_settings=dict(max_content_width=95, help_option_names=["-h", "--help"]),
@@ -121,8 +149,25 @@ def report_networks(grid_mgr, networks):
 )
 @optgroup.group("List Options")
 @optgroup.option("--get", is_flag=True, default=False, help="Get NIOS Network Objects")
-@optgroup.option("-c", "--count", default=100, help="NIOS Network Objects Count")
-@optgroup.option("-f", "--filter", default=100, help="NIOS Network Objects Count")
+@optgroup.option(
+    "-c",
+    "--count",
+    default=100,
+    show_default=True,
+    help="NIOS Return Network Objects Count",
+)
+@optgroup.option(
+    "-f", "--filter", help="Filter network based on Address block ie 10.0.0.0"
+)
+@optgroup.group("Add Options")
+@optgroup.option(
+    "-a",
+    "--add",
+    is_flag=True,
+    default=False,
+    help="Add Extensible Attribute or update if attribute is already assigned to object",
+)
+@optgroup.option("--extattr", type=(str, str), multiple=True, help="NIOS ExtAttr")
 def main(
     grid_mgr: str,
     username: str,
@@ -131,6 +176,8 @@ def main(
     get: bool,
     count: int,
     filter: str,
+    add: bool,
+    extattr: str,
 ) -> None:
     if debug:
         increase_log_level()
@@ -150,6 +197,8 @@ def main(
     if get:
         networks = get_networks(debug, count, filter)
         report_networks(grid_mgr, networks)
+    if add:
+        add_network_ea(filter, extattr)
     sys.exit()
 
 
