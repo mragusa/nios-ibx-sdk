@@ -9,7 +9,7 @@ from ibx_sdk.logger.ibx_logger import init_logger, increase_log_level
 from ibx_sdk.nios.exceptions import WapiRequestException
 from ibx_sdk.nios.gift import Gift
 from rich.console import Console
-from rich.table import Column, Table
+from rich.table import Table
 from rich import box
 
 log = init_logger(
@@ -25,20 +25,30 @@ wapi = Gift()
 console = Console()
 
 help_text = """
-Script to add / delete extensible attributes from networks
+Script to get/add/delete/update extensible attributes on NIOS Network Objects
 """
 
 
-def get_networks(debug):
+def get_networks(debug, count, filter):
     try:
         # Retrieve dns view from Infoblox appliance
-        networks = wapi.get(
-            "network",
-            params={
-                "_max_results": 50000,
-                "_return_fields": ["ipv4addr", "comment", "extattrs"],
-            },
-        )
+        if filter:
+            networks = wapi.get(
+                "network",
+                params={
+                    "ipv4addr": filter,
+                    "_max_results": count,
+                    "_return_fields": ["ipv4addr", "comment", "extattrs"],
+                },
+            )
+        else:
+            networks = wapi.get(
+                "network",
+                params={
+                    "_max_results": count,
+                    "_return_fields": ["ipv4addr", "comment", "extattrs"],
+                },
+            )
         if networks.status_code != 200:
             if debug:
                 print(
@@ -57,18 +67,26 @@ def get_networks(debug):
 
 
 def report_networks(grid_mgr, networks):
+    table_column = ["IPv4 Address", "Comment", "Extensible Attributes"]
     table = Table(
-        Column(header="Reference", justify="center"),
-        Column(header="IPv4 Address", justify="center"),
-        Column(header="Comment", justify="center"),
-        Column(header="Extensible Attributes", justify="center"),
         title=f"Infoblox Grid: {grid_mgr} Networks",
         box=box.SIMPLE,
+        row_styles=["dim", ""],
     )
+    for c in table_column:
+        table.add_column(header=f"{c}", justify="center", no_wrap=True, highlight=True)
     for n in networks:
+        extattrs = []
         if "comment" not in n:
             n["comment"] = "None"
-        table.add_row(n["_ref"], n["ipv4addr"], n["comment"], str(n["extattrs"]))
+        if "extattrs" in n:
+            for e in n["extattrs"]:
+                extattrs.append(f"{e} : {n['extattrs'][e]['value']}")
+        table.add_row(
+            n["ipv4addr"],
+            n["comment"],
+            str(("\n").join(extattrs)),
+        )
     console.print(table)
 
 
@@ -101,7 +119,19 @@ def report_networks(grid_mgr, networks):
     show_default=True,
     help="enable verbose debug output",
 )
-def main(grid_mgr: str, username: str, wapi_ver: str, debug: bool) -> None:
+@optgroup.group("List Options")
+@optgroup.option("--get", is_flag=True, default=False, help="Get NIOS Network Objects")
+@optgroup.option("-c", "--count", default=100, help="NIOS Network Objects Count")
+@optgroup.option("-f", "--filter", default=100, help="NIOS Network Objects Count")
+def main(
+    grid_mgr: str,
+    username: str,
+    wapi_ver: str,
+    debug: bool,
+    get: bool,
+    count: int,
+    filter: str,
+) -> None:
     if debug:
         increase_log_level()
     wapi.grid_mgr = grid_mgr
@@ -117,8 +147,9 @@ def main(grid_mgr: str, username: str, wapi_ver: str, debug: bool) -> None:
         if debug:
             log.info(f"Connected to Infoblox grid manager {wapi.grid_mgr}")
         print(f"Connected to Infoblox grid manager {wapi.grid_mgr}")
-    networks = get_networks(debug)
-    report_networks(grid_mgr, networks)
+    if get:
+        networks = get_networks(debug, count, filter)
+        report_networks(grid_mgr, networks)
     sys.exit()
 
 
