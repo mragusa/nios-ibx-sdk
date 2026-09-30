@@ -102,7 +102,7 @@ def add_network_ea(filter, extattr):
         "network",
         params={
             "ipv4addr": filter,
-            "_return_fields": ["ipv4addr", "comment", "extattrs"],
+            "_return_fields": ["ipv4addr", "extattrs"],
         },
     )
     if network.status_code != 200:
@@ -116,6 +116,26 @@ def add_network_ea(filter, extattr):
             print(f"Error: {extattr_status.status_code} {extattr_status.text}")
         else:
             print(f"Extensible Attribute Applied: {extattr_status.json()}")
+
+
+def del_network_ea(filter, extattr):
+    nios_ea = dict(extattr)
+    network = wapi.get(
+        "network",
+        params={"ipv4addr": filter, "_return_fields": ["ipv4addr", "extattrs"]},
+    )
+    if network.status_code != 200:
+        print(network.status_code, network.text)
+    else:
+        net = network.json()
+        for e in nios_ea:
+            ea_removal = wapi.put(
+                net[0]["_ref"], data=json.dumps({"extattrs-": {e: {}}})
+            )
+            if ea_removal.status_code != 200:
+                print(f"Error: {ea_removal.status_code} {ea_removal.text}")
+            else:
+                print(f"{e} removed from {filter}")
 
 
 @click.command(
@@ -148,7 +168,9 @@ def add_network_ea(filter, extattr):
     help="enable verbose debug output",
 )
 @optgroup.group("List Options")
-@optgroup.option("--get", is_flag=True, default=False, help="Get NIOS Network Objects")
+@optgroup.option(
+    "-l", "--get", is_flag=True, default=False, help="List NIOS Network Objects"
+)
 @optgroup.option(
     "-c",
     "--count",
@@ -159,7 +181,7 @@ def add_network_ea(filter, extattr):
 @optgroup.option(
     "-f", "--filter", help="Filter network based on Address block ie 10.0.0.0"
 )
-@optgroup.group("Add Options")
+@optgroup.group("Add/Delete Options")
 @optgroup.option(
     "-a",
     "--add",
@@ -167,7 +189,14 @@ def add_network_ea(filter, extattr):
     default=False,
     help="Add Extensible Attribute or update if attribute is already assigned to object",
 )
-@optgroup.option("--extattr", type=(str, str), multiple=True, help="NIOS ExtAttr")
+@optgroup.option(
+    "-d",
+    "--delete",
+    is_flag=True,
+    default=False,
+    help="Delete Extensible Attribute",
+)
+@optgroup.option("-e", "--extattr", type=(str, str), multiple=True, help="NIOS ExtAttr")
 def main(
     grid_mgr: str,
     username: str,
@@ -177,6 +206,7 @@ def main(
     count: int,
     filter: str,
     add: bool,
+    delete: bool,
     extattr: str,
 ) -> None:
     if debug:
@@ -199,6 +229,8 @@ def main(
         report_networks(grid_mgr, networks)
     if add:
         add_network_ea(filter, extattr)
+    if delete:
+        del_network_ea(filter, extattr)
     sys.exit()
 
 
