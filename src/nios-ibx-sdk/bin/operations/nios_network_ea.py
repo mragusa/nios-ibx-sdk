@@ -4,16 +4,17 @@
 
 
 import getpass
+import json
 import sys
+
 import click
 from click_option_group import optgroup
-import json
-from ibx_sdk.logger.ibx_logger import init_logger, increase_log_level
+from ibx_sdk.logger.ibx_logger import increase_log_level, init_logger
 from ibx_sdk.nios.exceptions import WapiRequestException
 from ibx_sdk.nios.gift import Gift
+from rich import box
 from rich.console import Console
 from rich.table import Table
-from rich import box
 
 log = init_logger(
     logfile_name="wapi.log",
@@ -96,8 +97,8 @@ def report_networks(grid_mgr, networks):
 def add_network_ea(filter, extattr):
     ea = {}
     nios_ea = dict(extattr)
-    for e in nios_ea:
-        ea[e] = {"value": nios_ea[e]}
+    for e, value in nios_ea.items():
+        ea[e] = {"value": value}
     network = wapi.get(
         "network",
         params={
@@ -140,7 +141,7 @@ def del_network_ea(filter, extattr):
 
 @click.command(
     help=help_text,
-    context_settings=dict(max_content_width=95, help_option_names=["-h", "--help"]),
+    context_settings={"max_content_width": 95, "help_option_names": ["-h", "--help"]},
 )
 @optgroup.group("Required Parameters")
 @optgroup.option("-g", "--grid-mgr", required=True, help="Infoblox Grid Manager")
